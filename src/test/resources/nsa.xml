@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns4:nsa xmlns:ns4="http://schemas.ogf.org/nsi/2014/02/discovery/nsa" xmlns:ns2="urn:ietf:params:xml:ns:vcard-4.0" xmlns:ns3="http://nordu.net/namespaces/2013/12/gnsbod" expires="2019-12-06T06:19:53.598+01:00" id="urn:ogf:network:es.net:2013:nsa:nsi-aggr-west" version="2018-12-06T05:19:53.864Z">
+    <name>nsi-aggr-west</name>
+    <softwareVersion>2.1.2-SNAPSHOT (c5c3f4d)</softwareVersion>
+    <startTime>2018-12-05T21:09:21.793</startTime>
+    <adminContact>
+        <ns2:vcard>
+            <ns2:uid>
+                <ns2:uri>https://nsi-aggr-west.es.net/nsi-v2/ConnectionServiceProvider#adminContact</ns2:uri>
+            </ns2:uid>
+            <ns2:prodid>
+                <ns2:text>ESnet - nsi-aggr-west </ns2:text>
+            </ns2:prodid>
+            <ns2:rev>
+                <ns2:timestamp>20181205T210921Z</ns2:timestamp>
+            </ns2:rev>
+            <ns2:kind>
+                <ns2:text>individual</ns2:text>
+            </ns2:kind>
+            <ns2:fn>
+                <ns2:text>Chin Guok</ns2:text>
+            </ns2:fn>
+            <ns2:n>
+                <ns2:surname>Guok</ns2:surname>
+                <ns2:given>Chin</ns2:given>
+            </ns2:n>
+        </ns2:vcard>
+    </adminContact>
+    <location>
+        <longitude>-122.25023</longitude>
+        <latitude>37.87692</latitude>
+    </location>
+    <interface>
+        <type>application/vnd.ogf.nsi.dds.v1+xml</type>
+        <href>https://nsi-aggr-west.es.net/discovery</href>
+    </interface>
+    <interface>
+        <type>application/vnd.ogf.nsi.cs.v2.requester+soap</type>
+        <href>https://nsi-aggr-west.es.net/nsi-v2/ConnectionServiceRequester</href>
+    </interface>
+    <interface>
+        <type>application/vnd.ogf.nsi.cs.v2.provider+soap</type>
+        <href>https://nsi-aggr-west.es.net/nsi-v2/ConnectionServiceProvider</href>
+    </interface>
+    <feature type="vnd.ogf.nsi.cs.v2.role.aggregator"/>
+    <peersWith>urn:ogf:network:manlan.internet2.edu:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:wix.internet2.edu:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:es.net:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:tb.es.net:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:geant.net:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:netherlight.net:2013:nsa:safnari</peersWith>
+    <peersWith>urn:ogf:network:icair.org:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:icair.org:2013:nsa:nsi-am-sl</peersWith>
+    <peersWith>urn:ogf:network:caltech.edu:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:cipo.rnp.br:2014:nsa</peersWith>
+    <peersWith>urn:ogf:network:cipo.rnp.br:2014:nsa:safnari</peersWith>
+    <peersWith>urn:ogf:network:oess.dcn.umnet.umich.edu:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:nsi.nddi-dev.bldc.net.internet2.edu:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:nsi.al2s.net.internet2.edu:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:snvaca.pacificwave.net:2016:nsa</peersWith>
+    <peersWith>urn:ogf:network:sttlwa.pacificwave.net:2016:nsa</peersWith>
+    <peersWith>urn:ogf:network:lsanca.pacificwave.net:2016:nsa</peersWith>
+    <peersWith>urn:ogf:network:tokyjp.pacificwave.net:2018:nsa</peersWith>
+    <peersWith>urn:ogf:network:cienaottawa8700.ciena.com:2017:nsa</peersWith>
+    <peersWith>urn:ogf:network:cienachicago8700.ciena.com:2017:nsa</peersWith>
+    <peersWith>urn:ogf:network:cienahanover8700.ciena.com:2017:nsa</peersWith>
+    <peersWith>urn:ogf:network:sinet.ac.jp:2013:nsa:nsi-aggr</peersWith>
+    <peersWith>urn:ogf:network:al2s.net.internet2.edu:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:netlab.es.net:2013:nsa</peersWith>
+    <peersWith>urn:ogf:network:canarie.ca:2017:nsa</peersWith>
+    <other>
+      <ns3:TopologyReachability>
+        <Topology cost="1" id="urn:ogf:network:twaren.nchc.org:2014:topology"/>
+        <Topology cost="1" id="urn:ogf:network:es.net:2013"/>
+        <Topology cost="1" id="urn:ogf:network:manlan.internet2.edu:2013"/>
+        <Topology cost="1" id="urn:ogf:network:ampath.net:2013:topology"/>
+        <Topology cost="1" id="urn:ogf:network:sttlwa.pacificwave.net:2016:topology"/>
+        <Topology cost="1" id="urn:ogf:network:krlight.net:2013:topology"/>
+        <Topology cost="1" id="urn:ogf:network:netherlight.net:2013"/>
+        <Topology cost="2" id="urn:ogf:network:southernlight.net.br:2013:topology"/>
+      </ns3:TopologyReachability>
+    </other>
+</ns4:nsa>
