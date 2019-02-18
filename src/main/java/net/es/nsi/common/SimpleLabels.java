@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -18,7 +19,7 @@ public class SimpleLabels {
     private static final Pattern hyphenPattern = Pattern.compile(SimpleLabel.HYPHEN);
 
     public static Set<SimpleLabel> fromString(String labels) throws IllegalArgumentException {
-        Set<SimpleLabel> results = new HashSet<>();
+        Set<SimpleLabel> results = new LinkedHashSet<>();
 
         if (Strings.isNullOrEmpty(labels)) {
             return results;

@@ -21,6 +21,9 @@ public class SimpleStp {
   public static final String NSI_LABEL_SEPARATOR = "?";
   public static final int NSI_NETWORK_LENGTH = 6;
 
+  public static final String NSI_MPLS_LABEL_URN = "http://nsi.nordu.net/nml#mpls";
+  public static final String NSI_VLAN_LABEL_URN = "http://schemas.ogf.org/nml/2012/10/ethernet#vlan";
+
   private String networkId;
   private String localId;
   private Set<SimpleLabel> labels = new HashSet<>();
@@ -100,6 +103,11 @@ public class SimpleStp {
     if (pt.getLabel() != null) {
       String labelType = pt.getLabel().getLabeltype();
       if (labelType != null && !labelType.isEmpty()) {
+        if (!NSI_MPLS_LABEL_URN.equalsIgnoreCase(labelType)  &&
+                !NSI_VLAN_LABEL_URN.equalsIgnoreCase(labelType)) {
+          throw new IllegalArgumentException("NmlPortType has unknown label type: " + labelType);
+        }
+
         int pos = labelType.lastIndexOf("#");
         String type = labelType.substring(pos + 1);
         if (type != null && !type.isEmpty()) {
@@ -130,6 +138,11 @@ public class SimpleStp {
     for (NmlLabelGroupType lgt : pg.getLabelGroup()) {
       String labelType = lgt.getLabeltype();
       if (labelType != null && !labelType.isEmpty()) {
+        if (!NSI_MPLS_LABEL_URN.equalsIgnoreCase(labelType)  &&
+                !NSI_VLAN_LABEL_URN.equalsIgnoreCase(labelType)) {
+          throw new IllegalArgumentException("NmlPortGroupType has unknown label type: " + labelType);
+        }
+
         int pos = labelType.lastIndexOf("#");
         String type = labelType.substring(pos + 1);
         if (type != null && !type.isEmpty()) {
