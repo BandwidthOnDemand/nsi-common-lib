@@ -9,56 +9,73 @@
   <packaging>jar</packaging>
 
   <properties>
+    <project.scm.id>github</project.scm.id>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.8</java.version>
-    <guava.version>18.0</guava.version>
   </properties>
 
-  <parent>
+  <!--<parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.1.2.RELEASE</version>
   </parent>
-
+-->
   <dependencies>
+    <!-- Needed for our use of JAXB API bindings. -->
     <dependency>
-      <groupId>javax.xml</groupId>
-      <artifactId>jaxp-api</artifactId>
-      <version>1.4.2</version>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>3.0.0</version>
     </dependency>
 
+    <!-- Needed for REST API bindings. -->
     <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>javax.mail-api</artifactId>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <version>3.0.0</version>
     </dependency>
 
+    <!-- For content encoding types. -->
     <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>javax.mail</artifactId>
+      <groupId>jakarta.mail</groupId>
+      <artifactId>jakarta.mail-api</artifactId>
+      <version>2.0.0</version>
+      <scope>provided</scope>
     </dependency>
 
+    <!-- For priority annotations. -->
     <dependency>
-      <groupId>xerces</groupId>
-      <artifactId>xercesImpl</artifactId>
-      <version>2.12.0</version>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>2.0.0</version>
     </dependency>
 
+    <!-- JAXB Runtime -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
+    <!-- Helper annotations for Getter/Setters and Builders. -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+      <version>[1.18.20,]</version>
     </dependency>
 
     <!-- Google JSON parsers perform better than Moxy. -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
+      <version>[2.8.7,]</version>
     </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>27.0.1-jre</version>
+      <version>[30.1.1-jre,]</version>
     </dependency>
 
     <!-- For FileUtils -->
@@ -68,21 +85,30 @@
       <version>2.6</version>
     </dependency>
 
-    <!-- SLF and Log4j for logging infrestructure. -->
+    <!-- Log4j for logging. -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>[2.14.1,)</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>[2.14.1,)</version>
     </dependency>
 
     <!-- To handle XML dateTime manipulation. -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
+      <version>[2.10.10,]</version>
     </dependency>
 
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <version>[4.13.2,)</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -90,18 +116,27 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <generateBackupPoms>false</generateBackupPoms>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
+        <version>3.8.1</version>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-          <testSource>${java.version}</testSource>
-          <testTarget>${java.version}</testTarget>
-          <compilerArgument>-Xlint:unchecked</compilerArgument>
+          <!-- Compatible down to java 1.8. Tested 1.8, 11, and 15. -->
+          <source>1.8</source>
+          <target>1.8</target>
+          <!-- <releaase>11</releaase> -->
           <compilerArgument>-Xlint:deprecation</compilerArgument>
         </configuration>
       </plugin>
+
 
       <plugin>
         <!-- We use this plugin to ensure that our usage of the
@@ -109,7 +144,7 @@
         for https://java.net/jira/browse/MAVEN_JAXB2_PLUGIN-80. -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <version>1.0-alpha-2</version>
         <executions>
           <execution>
             <id>set-additional-system-properties</id>
@@ -121,8 +156,8 @@
         <configuration>
           <properties>
             <property>
-              <name>javax.xml.accessExternalSchema</name>
-              <value>file,http</value>
+              <name>javax.xml.accessExternalDTD</name>
+              <value>file,http,all</value>
             </property>
           </properties>
         </configuration>
@@ -131,92 +166,118 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jaxb2-maven-plugin</artifactId>
-        <version>1.6</version>
-        <dependencies>
-          <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>1.4.01</version>
-          </dependency>
-          <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.11.0</version>
-          </dependency>
-        </dependencies>
+        <version>2.4</version>
         <executions>
+
+          <!-- Here we build the NSI Topology schema. -->
           <execution>
-            <id>nml</id>
+            <id>topology</id>
             <goals>
               <goal>xjc</goal>
             </goals>
             <configuration>
-              <bindingDirectory>${basedir}/src/main/resources/xsd</bindingDirectory>
-              <bindingFiles>nml.xjb</bindingFiles>
-              <schemaDirectory>${basedir}/src/main/resources/xsd</schemaDirectory>
-              <schemaFiles>nmlbase.xsd, nml-ethernet.xsd, ogf_nsi_services_definition_v2_0.xsd, nsi-ext.xsd</schemaFiles>
+              <sources>
+                <source>${basedir}/src/main/schema/topology/xsd</source>
+              </sources>
+              <xjbSources>
+                <xjbSource>${basedir}/src/main/schema/topology/xjb</xjbSource>
+              </xjbSources>
               <packageName>net.es.nsi.common.jaxb.nml</packageName>
               <clearOutputDir>false</clearOutputDir>
             </configuration>
           </execution>
+
+          <!-- Here we build the NSA Discovery Document schema. -->
           <execution>
             <id>nsa</id>
             <goals>
               <goal>xjc</goal>
             </goals>
             <configuration>
-              <bindingDirectory>${basedir}/src/main/resources/xsd</bindingDirectory>
-              <bindingFiles>nsa.xjb</bindingFiles>
-              <schemaDirectory>${basedir}/src/main/resources/xsd</schemaDirectory>
-              <schemaFiles>ogf_nsi_discovery_nsa_v1_0.xsd, xCard.xsd, gnsbod.xsd</schemaFiles>
+              <sources>
+                <source>${basedir}/src/main/schema/nsa/xsd</source>
+              </sources>
+              <xjbSources>
+                <xjbSource>${basedir}/src/main/schema/nsa/xjb</xjbSource>
+              </xjbSources>
               <packageName>net.es.nsi.common.jaxb.nsa</packageName>
               <clearOutputDir>false</clearOutputDir>
             </configuration>
           </execution>
+
+          <!-- Here we build the Digitial Signature schema. -->
           <execution>
-            <id>nmwg</id>
+            <id>signatures</id>
             <goals>
               <goal>xjc</goal>
             </goals>
             <configuration>
-              <bindingDirectory>${basedir}/src/main/resources/xsd</bindingDirectory>
-              <bindingFiles>nmwg.xjb</bindingFiles>
-              <schemaDirectory>${basedir}/src/main/resources/xsd</schemaDirectory>
-              <schemaFiles>nmtopo-ctrlp.xsd</schemaFiles>
-              <packageName>net.es.nsi.common.jaxb.nmwg</packageName>
+              <sources>
+                <source>${basedir}/src/main/schema/signatures/xsd</source>
+              </sources>
+              <xjbSources>
+                <xjbSource>${basedir}/src/main/schema/signatures/xjb</xjbSource>
+              </xjbSources>
+              <packageName>net.es.nsi.common.jaxb.signatures</packageName>
               <clearOutputDir>false</clearOutputDir>
             </configuration>
           </execution>
         </executions>
+
+        <dependencies>
+          <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+          </dependency>
+
+          <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+          </dependency>
+
+          <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.22.0</version>
+        <configuration>
+          <argLine>--illegal-access=permit</argLine>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${basedir}/var</directory>
+            </fileset>
+          </filesets>
+        </configuration>
       </plugin>
     </plugins>
   </build>
 
-  <repositories>
+    <distributionManagement>
     <repository>
-      <id>spring-releases</id>
-      <url>https://repo.spring.io/libs-release</url>
+      <id>github</id>
+      <name>GitHub BanwidthOnDemand nsi-dds Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/BandwidthOnDemand/nsi-dds-lib</url>
     </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>spring-releases</id>
-      <url>https://repo.spring.io/libs-release</url>
-    </pluginRepository>
-  </pluginRepositories>
-
-  <distributionManagement>
-    <repository>
-      <id>surfnet-public-releases</id>
-      <name>surfnet-public-releases</name>
-      <url>http://atlas.dlp.surfnet.nl/nexus/content/repositories/public-releases</url>
-    </repository>
-    <snapshotRepository>
-      <id>surfnet-public-snapshots</id>
-      <name>surfnet-snapshots</name>
-      <url>http://atlas.dlp.surfnet.nl/nexus/content/repositories/public-snapshots</url>
-    </snapshotRepository>
   </distributionManagement>
+
 </project>
 

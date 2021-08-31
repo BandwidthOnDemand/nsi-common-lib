@@ -1,0 +1,65 @@
+<jxb:bindings version="3.0"
+  xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <jxb:bindings schemaLocation="../xsd/nmlbase.xsd" node="/xsd:schema">
+        <jxb:schemaBindings>
+            <jxb:nameXmlTransform>
+            	<jxb:typeName prefix="Nml"/>
+            	<jxb:anonymousTypeName prefix="Nml"/>
+            </jxb:nameXmlTransform>
+        </jxb:schemaBindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="../xsd/nsi-ext.xsd" node="/xsd:schema">
+        <jxb:schemaBindings>
+            <jxb:nameXmlTransform>
+                <jxb:typeName prefix="Nml"/>
+                <jxb:anonymousTypeName prefix="Nml"/>
+            </jxb:nameXmlTransform>
+        </jxb:schemaBindings>
+        <jxb:bindings node=".//xsd:element[@name='Service']">
+                <jxb:factoryMethod name="NsaService"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="../xsd/nml-ethernet.xsd" node="/xsd:schema">
+        <jxb:schemaBindings>
+            <jxb:nameXmlTransform>
+                <jxb:typeName prefix="Eth"/>
+                <jxb:anonymousTypeName prefix="Eth"/>
+            </jxb:nameXmlTransform>
+        </jxb:schemaBindings>
+        <jxb:bindings node=".//xsd:element[@name='label']">
+                <jxb:factoryMethod name="EthLabel"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="../xsd/nmtopo-ctrlp.xsd" node="/xsd:schema">
+        <jxb:schemaBindings>
+            <jxb:nameXmlTransform>
+                <jxb:typeName prefix="Ctrlp"/>
+                <jxb:anonymousTypeName prefix="Ctrlp"/>
+            </jxb:nameXmlTransform>
+        </jxb:schemaBindings>
+        <jxb:bindings node="//xsd:complexType[@name='CtrlPlaneAddressContent']">
+            <jxb:bindings node=".//xsd:attribute[@name='value']">
+                <jxb:property name="valueAttribute"/>
+            </jxb:bindings>
+        </jxb:bindings>
+        <jxb:bindings node=".//xsd:element[@name='topology']">
+                <jxb:factoryMethod name="CtrlpTopology"/>
+        </jxb:bindings>
+        <jxb:bindings node=".//xsd:element[@name='link']">
+                <jxb:factoryMethod name="CtrlpLink"/>
+        </jxb:bindings>
+        <jxb:bindings node=".//xsd:element[@name='node']">
+                <jxb:factoryMethod name="CtrlpNode"/>
+        </jxb:bindings>
+        <jxb:bindings node=".//xsd:element[@name='port']">
+                <jxb:factoryMethod name="CtrlpPort"/>
+        </jxb:bindings>
+
+    </jxb:bindings>
+
+</jxb:bindings>

@@ -1,16 +1,16 @@
 package net.es.nsi.common.util;
 
 import com.google.common.base.Strings;
+import jakarta.mail.MessagingException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import javax.mail.MessagingException;
 import javax.xml.parsers.ParserConfigurationException;
 import net.es.nsi.common.jaxb.DomParser;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
  */
 public class Decoder {
 
-  private final static Logger LOG = LoggerFactory.getLogger(Decoder.class);
+  private final static Logger LOG = LogManager.getLogger(Decoder.class);
 
   public static String decode(String doc) throws IOException {
     if (Strings.isNullOrEmpty(doc)) {

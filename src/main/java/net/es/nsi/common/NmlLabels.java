@@ -4,7 +4,6 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-import lombok.extern.slf4j.Slf4j;
 import static net.es.nsi.common.NmlEthernet.isVlanLabel;
 import net.es.nsi.common.jaxb.nml.NmlLabelGroupType;
 import net.es.nsi.common.jaxb.nml.NmlLabelType;
@@ -13,7 +12,6 @@ import net.es.nsi.common.jaxb.nml.NmlLabelType;
  *
  * @author hacksaw
  */
-@Slf4j
 public class NmlLabels {
 
   public static Set<NmlLabelType> labelGroupToLabels(NmlLabelGroupType labelGroup) {

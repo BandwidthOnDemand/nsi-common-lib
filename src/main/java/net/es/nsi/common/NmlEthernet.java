@@ -2,7 +2,7 @@ package net.es.nsi.common;
 
 import java.util.List;
 import java.util.Optional;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 /**

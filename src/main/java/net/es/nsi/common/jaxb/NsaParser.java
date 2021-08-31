@@ -2,8 +2,8 @@ package net.es.nsi.common.jaxb;
 
 import java.io.IOException;
 import java.io.InputStream;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import net.es.nsi.common.jaxb.nsa.NsaType;
 import net.es.nsi.common.jaxb.nsa.ObjectFactory;
 

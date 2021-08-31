@@ -19,6 +19,7 @@
  */
 package net.es.nsi.common;
 
+import jakarta.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import net.es.nsi.common.jaxb.NmlParser;
 import net.es.nsi.common.jaxb.nml.NmlBidirectionalPortType;

@@ -2,8 +2,8 @@ package net.es.nsi.common;
 
 import java.io.IOException;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import net.es.nsi.common.jaxb.NmlParser;
 import net.es.nsi.common.jaxb.nml.NmlBidirectionalPortType;
 import net.es.nsi.common.jaxb.nml.NmlNetworkObject;

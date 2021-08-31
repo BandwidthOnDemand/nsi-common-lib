@@ -10,27 +10,28 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Optional;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A singleton to load the very expensive JAXBContext once.
  *
  * @author hacksaw
  */
-@Slf4j
 public class JaxbParser {
+  private final static Logger LOG = LogManager.getLogger(JaxbParser.class);
   private JAXBContext jc;
 
   public JaxbParser(String packages) {
@@ -38,7 +39,7 @@ public class JaxbParser {
       // Load a JAXB context.
       jc = JAXBContext.newInstance(packages);
     } catch (JAXBException jaxb) {
-      log.error("JaxbParser: Failed to load JAXB instance for packages " + packages, jaxb);
+      LOG.error("JaxbParser: Failed to load JAXB instance for packages " + packages, jaxb);
     }
   }
 
@@ -82,7 +83,7 @@ public class JaxbParser {
   public void writeFile(JAXBElement<?> jaxbElement, String file) throws JAXBException, IOException {
     File fd = new File(file);
     if (!fd.exists()) {
-      log.debug("Creating file " + fd.getAbsolutePath());
+      LOG.debug("Creating file " + fd.getAbsolutePath());
       FileUtils.touch(fd);
     }
 
@@ -143,7 +144,7 @@ public class JaxbParser {
       result = writer.toString();
     } catch (JAXBException ex) {
       // Something went wrong so get out of here.
-      log.error("Failed to serialize JAXB structure.", ex);
+      LOG.error("Failed to serialize JAXB structure.", ex);
       throw ex;
     } finally {
       try {
@@ -167,7 +168,7 @@ public class JaxbParser {
       result = writer.toString();
     } catch (JAXBException ex) {
       // Something went wrong so get out of here.
-      log.error("Failed to serialize JAXB structure.", ex);
+      LOG.error("Failed to serialize JAXB structure.", ex);
       throw ex;
     } finally {
       try {
@@ -273,7 +274,7 @@ public class JaxbParser {
       jaxbContext.createMarshaller().marshal(element, writer);
     } catch (JAXBException e) {
       // Something went wrong so get out of here.
-      log.error("[JaxbParser] jaxb2String: Error marshalling object "
+      LOG.error("[JaxbParser] jaxb2String: Error marshalling object "
               + messageClass.getName() + ": " + e.toString());
       return null;
     }

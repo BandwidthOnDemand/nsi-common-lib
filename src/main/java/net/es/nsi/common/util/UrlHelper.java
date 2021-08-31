@@ -4,14 +4,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author hacksaw
  */
-@Slf4j
 public class UrlHelper {
+  private final static Logger LOG = LogManager.getLogger(UrlHelper.class);
 
   /**
    * Returns true if the specified URI is absolute, and false otherwise.
@@ -26,7 +27,7 @@ public class UrlHelper {
         return true;
       }
     } catch (URISyntaxException ex) {
-      log.debug("isAbsolute: invalid URI " + uri);
+      LOG.debug("isAbsolute: invalid URI " + uri);
     }
 
     return false;
