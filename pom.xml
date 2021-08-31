@@ -5,7 +5,7 @@
 
   <groupId>net.es.nsi</groupId>
   <artifactId>common-lib</artifactId>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -15,12 +15,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
-  <!--<parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.1.2.RELEASE</version>
-  </parent>
--->
   <dependencies>
     <!-- Needed for our use of JAXB API bindings. -->
     <dependency>
@@ -271,11 +265,39 @@
     </plugins>
   </build>
 
-    <distributionManagement>
+  <profiles>
+    <profile>
+      <id>examples-source-zip</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2/</url>
+    </repository>
     <repository>
       <id>github</id>
-      <name>GitHub BanwidthOnDemand nsi-dds Apache Maven Packages</name>
-      <url>https://maven.pkg.github.com/BandwidthOnDemand/nsi-dds-lib</url>
+      <url>https://maven.pkg.github.com/OWNER/*</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub BanwidthOnDemand nsi-dds-lib Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/BandwidthOnDemand/nsi-common-lib</url>
     </repository>
   </distributionManagement>
 
