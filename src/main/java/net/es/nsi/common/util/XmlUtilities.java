@@ -5,17 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.concurrent.CopyOnWriteArrayList;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
-import jakarta.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -162,7 +161,7 @@ public class XmlUtilities {
   }
 
   public static Collection<String> getXmlFilenames(String path) throws NullPointerException {
-    Collection<String> results = new ArrayList<>();
+    Collection<String> results = new CopyOnWriteArrayList<>();
     File folder = new File(path);
 
     // We will grab all XML files from the target directory.
@@ -178,6 +177,6 @@ public class XmlUtilities {
         }
       }
     }
-    return new CopyOnWriteArrayList(results);
+    return results;
   }
 }

@@ -10,20 +10,20 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Optional;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /**
  * A singleton to load the very expensive JAXBContext once.
@@ -191,18 +191,23 @@ public class JaxbParser {
    * @throws JAXBException Could not parse the specified XML document.
    */
   public <T extends Object> T xml2Jaxb(Class<T> xmlClass, String xml) throws JAXBException, IllegalArgumentException {
-    Optional<JAXBElement<T>> element;
+    Optional<JAXBElement> element = Optional.empty();
     try (StringReader reader = new StringReader(xml)) {
-      element = Optional.ofNullable((JAXBElement<T>) unmarshaller().unmarshal(reader));
+      Object unmarshalled = unmarshaller().unmarshal(reader);
+      if (unmarshalled instanceof JAXBElement) {
+        element = Optional.ofNullable((JAXBElement) unmarshalled);
+      }
     }
 
     if (!element.isPresent()) {
-      throw new IllegalArgumentException("Unable to convert string to JAXB, class=" + xmlClass.getName() + ", xml=\n" + xml);
+      throw new IllegalArgumentException("Unable to convert string to JAXB, class="
+              + xmlClass.getName() + ", xml=\n" + xml);
     } else if (element.get().getDeclaredType() == xmlClass) {
       return xmlClass.cast(element.get().getValue());
     }
 
-    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found " + element.get().getDeclaredType().getCanonicalName());
+    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found "
+            + element.get().getDeclaredType().getCanonicalName());
   }
 
   /**
@@ -216,14 +221,20 @@ public class JaxbParser {
    * @throws IOException InputStream could not be read.
    */
   public <T extends Object> T xml2Jaxb(Class<T> xmlClass, InputStream is) throws JAXBException, IOException {
-    JAXBElement<T> element = (JAXBElement<T>) unmarshaller().unmarshal(is);
-    if (element == null) {
-      throw new IllegalArgumentException("Unable to convert stream to JAXB, class=" + xmlClass.getName());
-    } else if (element.getDeclaredType() == xmlClass) {
-      return xmlClass.cast(element.getValue());
+    Optional<JAXBElement> element = Optional.empty();
+    Object unmarshalled = unmarshaller().unmarshal(is);
+    if (unmarshalled instanceof JAXBElement) {
+      element = Optional.ofNullable((JAXBElement) unmarshalled);
     }
 
-    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found " + element.getDeclaredType().getCanonicalName());
+    if (!element.isPresent()) {
+      throw new IllegalArgumentException("Unable to convert stream to JAXB, class=" + xmlClass.getName());
+    } else if (element.get().getDeclaredType() == xmlClass) {
+      return xmlClass.cast(element.get().getValue());
+    }
+
+    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found "
+            + element.get().getDeclaredType().getCanonicalName());
   }
 
   /**
@@ -237,22 +248,31 @@ public class JaxbParser {
    * @throws IOException BufferedInputStream could not be read.
    */
   public <T extends Object> T xml2Jaxb(Class<T> xmlClass, BufferedInputStream is) throws JAXBException, IOException {
-    JAXBElement<T> element = (JAXBElement<T>) unmarshaller().unmarshal(is);
-    if (element.getDeclaredType() == xmlClass) {
-      return xmlClass.cast(element.getValue());
+    Optional<JAXBElement> element = Optional.empty();
+    Object unmarshalled = unmarshaller().unmarshal(is);
+    if (unmarshalled instanceof JAXBElement) {
+      element = Optional.ofNullable((JAXBElement) unmarshalled);
     }
 
-    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found " + element.getDeclaredType().getCanonicalName());
+    if (!element.isPresent()) {
+      throw new IllegalArgumentException("Unable to convert stream to JAXB, class=" + xmlClass.getName());
+    } else if (element.get().getDeclaredType() == xmlClass) {
+      return xmlClass.cast(element.get().getValue());
+    }
+
+    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found "
+            + element.get().getDeclaredType().getCanonicalName());
   }
 
   /**
    * Utility method to marshal a JAXB annotated java object to an XML string.
    *
+   * @param <T>
    * @param messageClass	The class of the object to marshal.
    * @param message             The object to marshal.
    * @return                    String containing the XML encoded object.
    */
-  public static String jaxb2String(Class<?> messageClass, Object message) {
+  public static <T extends Object> String jaxb2String(Class<T> messageClass, Object message) {
 
     // Make sure we are given the correct input.
     if (messageClass == null || message == null) {
@@ -263,14 +283,12 @@ public class JaxbParser {
     StringWriter writer = new StringWriter();
 
     try {
-      // We will use JAXB to marshal the java objects.
-      final JAXBContext jaxbContext = JAXBContext.newInstance(messageClass);
-
       // We do not have @XmlRootElement annotations on the classes so
       // we need to manually create the JAXBElement.
-      JAXBElement<?> element = new JAXBElement(new QName("uri", "local"), messageClass, message);
+      JAXBElement<T> element = new JAXBElement<T>(new QName("uri", "local"), messageClass, messageClass.cast(message));
 
       // Marshal the object.
+      final JAXBContext jaxbContext = JAXBContext.newInstance(messageClass);
       jaxbContext.createMarshaller().marshal(element, writer);
     } catch (JAXBException e) {
       // Something went wrong so get out of here.
@@ -279,7 +297,6 @@ public class JaxbParser {
       return null;
     }
 
-    // Return the XML string.
     return writer.toString();
   }
 }

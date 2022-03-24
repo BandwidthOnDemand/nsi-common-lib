@@ -2,8 +2,8 @@ package net.es.nsi.common.jaxb;
 
 import java.io.IOException;
 import java.util.List;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import net.es.nsi.common.jaxb.nsa.HolderType;
 import net.es.nsi.common.jaxb.nsa.NsaType;
 import net.es.nsi.common.jaxb.nsa.TopologyReachabilityType;
@@ -45,7 +45,7 @@ public class NsaParserTest {
 
   /**
    * Test of readTopology method, of class NsaParser.
-   * @throws jakarta.xml.bind.JAXBException
+   * @throws javax.xml.bind.JAXBException
    * @throws java.io.IOException
    */
   @Test
@@ -56,7 +56,7 @@ public class NsaParserTest {
 
   /**
    * Test of writeTopology method, of class NsaParser.
-   * @throws jakarta.xml.bind.JAXBException
+   * @throws javax.xml.bind.JAXBException
    * @throws java.io.IOException
    */
   @Test

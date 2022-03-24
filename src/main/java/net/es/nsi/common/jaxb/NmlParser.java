@@ -1,9 +1,9 @@
 package net.es.nsi.common.jaxb;
 
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import net.es.nsi.common.jaxb.nml.NmlTopologyType;
 import net.es.nsi.common.jaxb.nml.ObjectFactory;
 

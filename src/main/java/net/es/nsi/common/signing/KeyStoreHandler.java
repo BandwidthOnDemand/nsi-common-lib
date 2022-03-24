@@ -21,7 +21,7 @@ import net.es.nsi.common.constants.Properties;
 
 /**
  * A Java keystore handler.
- * 
+ *
  * @author hacksaw
  */
 public class KeyStoreHandler {
@@ -70,7 +70,7 @@ public class KeyStoreHandler {
         // Create the KeyInfo containing the X509Data.
         KeyInfoFactory kif = fac.getKeyInfoFactory();
         X509Certificate x509Certificate = getX509Certificate(alias);
-        List x509Content = new ArrayList();
+        List<Object> x509Content = new ArrayList<>();
         x509Content.add(x509Certificate.getSubjectX500Principal().getName());
         x509Content.add(x509Certificate);
         X509Data xd = kif.newX509Data(x509Content);

@@ -1,6 +1,6 @@
 package net.es.nsi.common.jaxb;
 
-import jakarta.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBElement;
 import net.es.nsi.common.Nml;
 import net.es.nsi.common.jaxb.nml.NmlBidirectionalPortType;
 import net.es.nsi.common.jaxb.nml.NmlNetworkObject;

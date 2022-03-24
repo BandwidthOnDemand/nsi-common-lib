@@ -5,8 +5,14 @@
 
   <groupId>net.es.nsi</groupId>
   <artifactId>common-lib</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.6.4</version>
+  </parent>
 
   <properties>
     <project.scm.id>github</project.scm.id>
@@ -16,54 +22,30 @@
   </properties>
 
   <dependencies>
-    <!-- Needed for our use of JAXB API bindings. -->
+    <!-- For JAXB support. -->
     <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>3.0.0</version>
-    </dependency>
-
-    <!-- Needed for REST API bindings. -->
-    <dependency>
-      <groupId>jakarta.ws.rs</groupId>
-      <artifactId>jakarta.ws.rs-api</artifactId>
-      <version>3.0.0</version>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
     </dependency>
 
     <!-- For content encoding types. -->
     <dependency>
-      <groupId>jakarta.mail</groupId>
-      <artifactId>jakarta.mail-api</artifactId>
-      <version>2.0.0</version>
-      <scope>provided</scope>
+      <groupId>javax.mail</groupId>
+      <artifactId>javax.mail-api</artifactId>
+      <version>1.6.2</version>
     </dependency>
 
-    <!-- For priority annotations. -->
     <dependency>
-      <groupId>jakarta.annotation</groupId>
-      <artifactId>jakarta.annotation-api</artifactId>
-      <version>2.0.0</version>
-    </dependency>
-
-    <!-- JAXB Runtime -->
-    <dependency>
-      <groupId>org.glassfish.jaxb</groupId>
-      <artifactId>jaxb-runtime</artifactId>
-      <version>3.0.0</version>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+      <version>1.6.2</version>
     </dependency>
 
     <!-- Helper annotations for Getter/Setters and Builders. -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>[1.18.20,]</version>
-    </dependency>
-
-    <!-- Google JSON parsers perform better than Moxy. -->
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>[2.8.7,]</version>
     </dependency>
 
     <dependency>
@@ -83,26 +65,25 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <version>[2.14.1,)</version>
+      <version>[2.17.0,)</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>[2.14.1,)</version>
+      <version>[2.17.0,)</version>
     </dependency>
 
     <!-- To handle XML dateTime manipulation. -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>[2.10.10,]</version>
+      <version>[2.10.13,]</version>
     </dependency>
 
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>[4.13.2,)</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -112,7 +93,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.5</version>
         <configuration>
           <generateBackupPoms>false</generateBackupPoms>
         </configuration>
@@ -126,8 +106,9 @@
           <!-- Compatible down to java 1.8. Tested 1.8, 11, and 15. -->
           <source>1.8</source>
           <target>1.8</target>
-          <!-- <releaase>11</releaase> -->
+          <!-- <release>11</release> -->
           <compilerArgument>-Xlint:deprecation</compilerArgument>
+          <compilerArgument>-Xlint:unchecked</compilerArgument>
         </configuration>
       </plugin>
 
@@ -177,7 +158,6 @@
                 <xjbSource>${basedir}/src/main/schema/topology/xjb</xjbSource>
               </xjbSources>
               <packageName>net.es.nsi.common.jaxb.nml</packageName>
-              <clearOutputDir>false</clearOutputDir>
             </configuration>
           </execution>
 
@@ -222,21 +202,21 @@
           <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-xjc</artifactId>
-            <version>3.0.0</version>
+            <version>2.3.6</version>
             <scope>compile</scope>
           </dependency>
 
           <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>3.0.0</version>
+            <version>2.3.0.1</version>
             <scope>compile</scope>
           </dependency>
 
           <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>3.0.0</version>
+            <version>2.3.6</version>
             <scope>compile</scope>
           </dependency>
         </dependencies>
@@ -286,7 +266,7 @@
     </repository>
     <repository>
       <id>github</id>
-      <url>https://maven.pkg.github.com/OWNER/*</url>
+      <url>https://maven.pkg.github.com/BandwidthOnDemand/*</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -296,7 +276,7 @@
   <distributionManagement>
     <repository>
       <id>github</id>
-      <name>GitHub BanwidthOnDemand nsi-dds-lib Apache Maven Packages</name>
+      <name>GitHub BanwidthOnDemand nsi-common-lib Apache Maven Packages</name>
       <url>https://maven.pkg.github.com/BandwidthOnDemand/nsi-common-lib</url>
     </repository>
   </distributionManagement>
