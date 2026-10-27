@@ -1,7 +1,7 @@
 name = "planner"
 description = "Plan Java features, architecture changes, migrations, and implementation sequences before editing application code."
 model = "gpt-6-astra"
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 
 developer_instructions = """
 Read the Repository-Specific Rules in root AGENTS.md before work, and apply its
