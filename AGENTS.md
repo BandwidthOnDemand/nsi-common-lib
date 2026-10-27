@@ -7,14 +7,16 @@ rules below add requirements when the user requests a review.
 
 ### Build and dependencies
 
-- This library targets Java 21 and requires JDK 21 or newer and Maven 3.9 or newer.
-  The Java 17 guidance for sibling repositories does not apply to this checkout.
+- This library targets Java 17 bytecode and supports builds and runtime use on every
+  Java major from 17 through 27 inclusive. Maven 3.9 or newer is required; Java 28+
+  is unverified. CI must build on all eleven JDKs and run the same Java 17-built
+  packaged artifact on every runtime.
 - Run focused tests with
   `mvn --batch-mode --no-transfer-progress -Dtest=ClassName test`, then run
   `mvn --batch-mode --no-transfer-progress clean verify` for final verification.
   Add `-o` when dependencies and plugins are already cached.
 - `make build` skips tests. Use `make test` or Maven verification to exercise them.
-  The Makefile selects its Java 21 Maven container through `MAVEN_IMAGE`.
+  The Makefile selects its Java 17 Maven container through `MAVEN_IMAGE`.
 - Keep dependency and plugin versions fixed to stable releases, using the Spring
   Boot parent and existing `pom.xml` properties for version management. Verify
   compatibility when upgrading; successful compilation alone is insufficient.
@@ -103,7 +105,8 @@ rules below add requirements when the user requests a review.
   Javadoc separately over handwritten sources with the compiled classes and Maven
   dependencies on its classpath. Use `-Xdoclint:all,-missing -Werror` to validate
   syntax and links without implicit-constructor warnings; still document explicitly
-  declared APIs. Finish with `git diff --check`.
+  declared APIs. Run this validation on JDK 17 and JDK 27. Finish with
+  `git diff --check`.
 
 ## Agent Coordination
 

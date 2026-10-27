@@ -61,7 +61,7 @@ class KeyStoreHandlerTest {
     @Test
     void missingFilesWrongPasswordsInvalidTypesAndCorruptionHaveExplicitFailures() throws Exception {
         assertThrows(IOException.class, () -> new KeyStoreHandler(directory.resolve("missing.p12").toString(), SigningTestSupport.PASSWORD, "PKCS12"));
-        assertThrows(IOException.class, () -> new KeyStoreHandler(store.toString(), "incorrect-password", "PKCS12"));
+        assertThrows(IOException.class, () -> new KeyStoreHandler(store.toString(), SigningTestSupport.PASSWORD + 'x', "PKCS12"));
         assertThrows(KeyStoreException.class, () -> new KeyStoreHandler(store.toString(), SigningTestSupport.PASSWORD, "unsupported-type"));
         assertThrows(KeyStoreException.class, () -> new KeyStoreHandler("", SigningTestSupport.PASSWORD, "PKCS12"));
         Path corrupt = Files.writeString(directory.resolve("corrupt.p12"), "not a keystore");

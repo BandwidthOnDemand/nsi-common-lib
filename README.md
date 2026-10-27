@@ -1,14 +1,40 @@
 # nsi-common-lib
 A library for common NSI constants and models.
 
-Build with JDK 21 or newer and Maven 3.9 or newer:
+Build with any JDK from 17 through 27 inclusive and Maven 3.9 or newer:
 
 ```sh
 mvn clean verify
 ```
 
-The library targets Java 21. `make build` and `make test` use a Maven Docker
-image with Eclipse Temurin 21; override `MAVEN_IMAGE` to select another image.
+The library targets Java 17 bytecode. Build and runtime compatibility covers every
+major Java version from 17 through 27 inclusive; Java 28+ is unverified.
+`make build` and `make test` default to `maven:3.10.0-eclipse-temurin-17`;
+override `MAVEN_IMAGE` to select another image in the supported window.
+Compatibility with historical non-LTS releases does not extend their vendors'
+maintenance or security-update periods.
+
+The Java compatibility workflow performs fresh builds on all eleven JDKs on
+Linux x64 with Temurin and Maven 3.10.0. It also runs a standalone consumer on
+every runtime against the same Java 17-built JAR, using only production
+dependencies. Other operating systems and JDK distributions require independent
+validation. The `Java compatibility` aggregate CI check fails if any matrix entry
+fails; configure it as a required branch-protection check in the hosting service.
+No remote repository settings are changed by this workflow.
+
+`clean verify` checks packaged class-file versions and runs the consumer against
+the locally built JAR. To test a canonical artifact built elsewhere, keep it
+outside `target` (which `clean` removes) and use:
+
+```sh
+mvn --batch-mode --no-transfer-progress clean verify -Dcompatibility.jar=/absolute/path/common-lib.jar
+```
+
+The consumer covers JAXB/Unicode, RSA/DSA signing and tampering rejection,
+codecs, labels, and URL behavior. Artifact checks require Java 17 class files
+without preview features and inspect runtime-selected dependency classes for
+every Java version in the window. Handwritten Javadoc is validated separately
+on JDK 17 and JDK 27 with `-Xdoclint:all,-missing -Werror`.
 
 Dependencies and build plugins use stable releases with fixed versions, managed
 by the Spring Boot parent and the properties in `pom.xml`.
@@ -22,7 +48,7 @@ Angus Mail implementation are included as runtime dependencies.
 
 XML signing uses RSA-SHA256 or DSA-SHA256 with SHA-512 reference digests.
 SHA-1 signatures are rejected, and unsupported signing key types fail explicitly.
-Java 21 secure validation stays enabled; module-access flags are unnecessary.
+XML signature secure validation stays enabled; module-access flags are unnecessary.
 The `jsr105Provider` system property can select a registered provider by name or
 class name, or a public third-party provider class with a public no-argument
 constructor. Without an override, signing uses standard JCA provider discovery.
