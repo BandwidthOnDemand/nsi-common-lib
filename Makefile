@@ -4,7 +4,7 @@
 #CERTFILE="certificates/host.cer"
 #CAFILE="certificates/host.ca"
 
-MAVEN_IMAGE ?= maven:3.10.0-eclipse-temurin-21
+MAVEN_IMAGE ?= maven:3.10.0-eclipse-temurin-17
 
 all:	build 
 

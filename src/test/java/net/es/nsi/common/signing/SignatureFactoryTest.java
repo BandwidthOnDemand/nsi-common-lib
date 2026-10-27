@@ -50,17 +50,13 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 /**
- * Tests Java 21 signing, provider compatibility, payload integrity, and adversarial XML signatures.
+ * Tests signing across Java 17 through 27, provider compatibility, payload integrity, and adversarial XML signatures.
  *
  * <p>System-property access is locked and restored because provider and JSSE configuration
  * is process-wide. Keystores and private keys are temporary test fixtures.
  */
 @ResourceLock(Resources.SYSTEM_PROPERTIES)
 class SignatureFactoryTest {
-    /**
-     * Public password for disposable PKCS12 test stores.
-     */
-    private static final String PASSWORD = "test-password";
     /**
      * Process-wide signing properties that each test snapshots and restores.
      */
@@ -135,7 +131,7 @@ class SignatureFactoryTest {
      * @return a handler for the selected fixture store
      */
     private static KeyStoreHandler handler(String algorithm) throws Exception {
-        return new KeyStoreHandler(keystore(algorithm).toString(), PASSWORD, "PKCS12");
+        return new KeyStoreHandler(keystore(algorithm).toString(), SigningTestSupport.PASSWORD, "PKCS12");
     }
 
     /**
@@ -224,7 +220,7 @@ class SignatureFactoryTest {
     @Test
     void defaultConstructorUsesPublicProviderDiscovery() throws Exception {
         System.setProperty(Properties.SYSTEM_PROPERTY_SSL_KEYSTORE, keystore("RSA").toString());
-        System.setProperty(Properties.SYSTEM_PROPERTY_SSL_KEYSTORE_PASSWORD, PASSWORD);
+        System.setProperty(Properties.SYSTEM_PROPERTY_SSL_KEYSTORE_PASSWORD, SigningTestSupport.PASSWORD);
         System.setProperty(Properties.SYSTEM_PROPERTY_SSL_KEYSTORE_TYPE, "PKCS12");
         Document signed = new SignatureFactory().generateEnvelopedSignature(document(), "signer");
         assertTrue(Validate.validateEnveloped(signed));
@@ -556,7 +552,7 @@ class SignatureFactoryTest {
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void selfValidationFailureIsReportedToTheCaller(boolean detached) throws Exception {
-        KeyStoreHandler mismatched = new KeyStoreHandler(keystore("RSA").toString(), PASSWORD, "PKCS12") {
+        KeyStoreHandler mismatched = new KeyStoreHandler(keystore("RSA").toString(), SigningTestSupport.PASSWORD, "PKCS12") {
             /**
              * Substitutes another certificate to force the signer self-validation failure path.
              *

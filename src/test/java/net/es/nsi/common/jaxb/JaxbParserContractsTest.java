@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import net.es.nsi.common.jaxb.nml.NmlTopologyType;
 import net.es.nsi.common.jaxb.nsa.NsaType;
 import net.es.nsi.common.jaxb.nsa.ObjectFactory;
@@ -133,13 +134,27 @@ class JaxbParserContractsTest {
      */
     @Test
     void concurrentSingletonParsingDoesNotShareUnmarshallerState() throws Exception {
-        try (var executor = Executors.newFixedThreadPool(4)) {
+        var executor = Executors.newFixedThreadPool(4);
+        try {
             List<Callable<String>> tasks = java.util.stream.IntStream.range(0, 20)
                     .mapToObj(i -> (Callable<String>) () -> NsaParser.getInstance().xml2Jaxb(NsaType.class,
                             XML.replace("urn:test:nsa", "urn:test:nsa:" + i)).getId()).toList();
             var results = executor.invokeAll(tasks);
             for (int i = 0; i < results.size(); i++) {
                 assertEquals("urn:test:nsa:" + i, results.get(i).get());
+            }
+        } finally {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                    assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS),
+                            "Concurrent parser workers did not terminate");
+                }
+            } catch (InterruptedException interrupted) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+                throw interrupted;
             }
         }
     }

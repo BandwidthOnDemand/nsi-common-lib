@@ -2,6 +2,8 @@ package net.es.nsi.common.signing;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.SecureRandom;
+import java.util.HexFormat;
 import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,13 +12,25 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 final class SigningTestSupport {
     /**
-     * Public test-only password used for disposable signing fixtures.
+     * Test-only password generated once at runtime and shared by disposable signing fixtures
+     * for the lifetime of this class.
      */
-    static final String PASSWORD = "test-password";
+    static final String PASSWORD = generatePassword();
     /**
      * Prevents construction of the signing-fixture utility.
      */
     private SigningTestSupport() { }
+
+    /**
+     * Generates an ASCII password suitable for keytool and PKCS12 test fixtures.
+     *
+     * @return a hexadecimal encoding of 16 securely generated random bytes
+     */
+    private static String generatePassword() {
+        byte[] bytes = new byte[16];
+        new SecureRandom().nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
+    }
 
     /**
      * Creates a one-day self-signed PKCS12 fixture with alias {@code signer}.
