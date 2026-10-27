@@ -50,7 +50,8 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 /**
- * Tests signing across Java 17 through 27, provider compatibility, payload integrity, and adversarial XML signatures.
+ * Tests signing on Java 17, 21, 25, and 27, provider compatibility, payload integrity,
+ * and adversarial XML signatures.
  *
  * <p>System-property access is locked and restored because provider and JSSE configuration
  * is process-wide. Keystores and private keys are temporary test fixtures.

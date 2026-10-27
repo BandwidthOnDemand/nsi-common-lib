@@ -1,22 +1,22 @@
 # nsi-common-lib
 A library for common NSI constants and models.
 
-Build with any JDK from 17 through 27 inclusive and Maven 3.9 or newer:
+Build with JDK 17, 21, 25, or 27 and Maven 3.9 or newer:
 
 ```sh
 mvn clean verify
 ```
 
-The library targets Java 17 bytecode. Build and runtime compatibility covers every
-major Java version from 17 through 27 inclusive; Java 28+ is unverified.
+The library targets Java 17 bytecode. Build and runtime support is limited to
+Java 17, 21, 25, and 27. Other Java versions are outside the supported configuration.
 `make build` and `make test` default to `maven:3.10.0-eclipse-temurin-17`;
-override `MAVEN_IMAGE` to select another image in the supported window.
-Compatibility with historical non-LTS releases does not extend their vendors'
-maintenance or security-update periods.
+override `MAVEN_IMAGE` to select another image for a supported Java version.
+Support for a Java release does not extend its vendor's maintenance or
+security-update period.
 
-The Java compatibility workflow performs fresh builds on all eleven JDKs on
+The Java compatibility workflow performs fresh builds on all four supported JDKs on
 Linux x64 with Temurin and Maven 3.10.0. It also runs a standalone consumer on
-every runtime against the same Java 17-built JAR, using only production
+each supported runtime against the same Java 17-built JAR, using only production
 dependencies. Other operating systems and JDK distributions require independent
 validation. The `Java compatibility` aggregate CI check fails if any matrix entry
 fails; configure it as a required branch-protection check in the hosting service.
@@ -33,7 +33,7 @@ mvn --batch-mode --no-transfer-progress clean verify -Dcompatibility.jar=/absolu
 The consumer covers JAXB/Unicode, RSA/DSA signing and tampering rejection,
 codecs, labels, and URL behavior. Artifact checks require Java 17 class files
 without preview features and inspect runtime-selected dependency classes for
-every Java version in the window. Handwritten Javadoc is validated separately
+each supported Java version. Handwritten Javadoc is validated separately
 on JDK 17 and JDK 27 with `-Xdoclint:all,-missing -Werror`.
 
 Dependencies and build plugins use stable releases with fixed versions, managed

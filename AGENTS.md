@@ -7,10 +7,10 @@ rules below add requirements when the user requests a review.
 
 ### Build and dependencies
 
-- This library targets Java 17 bytecode and supports builds and runtime use on every
-  Java major from 17 through 27 inclusive. Maven 3.9 or newer is required; Java 28+
-  is unverified. CI must build on all eleven JDKs and run the same Java 17-built
-  packaged artifact on every runtime.
+- This library targets Java 17 bytecode and supports builds and runtime use only on
+  Java 17, 21, 25, and 27. Maven 3.9 or newer is required. Other Java majors are
+  outside the supported configuration. CI must build on all four supported JDKs
+  and run the same Java 17-built packaged artifact on each supported runtime.
 - Run focused tests with
   `mvn --batch-mode --no-transfer-progress -Dtest=ClassName test`, then run
   `mvn --batch-mode --no-transfer-progress clean verify` for final verification.
