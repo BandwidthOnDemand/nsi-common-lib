@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-24.04
     container: maven:3.10.0-eclipse-temurin-17
     timeout-minutes: 20
+    outputs:
+      jar-name: ${{ steps.artifact.outputs.jar-name }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
@@ -24,11 +26,19 @@ jobs:
         run: mvn --version
       - name: Build and verify canonical artifact
         run: mvn --batch-mode --no-transfer-progress clean verify
+      - name: Resolve canonical artifact name
+        id: artifact
+        shell: bash
+        run: |
+          mvn --batch-mode --no-transfer-progress help:evaluate \
+            -Dexpression=project.build.finalName \
+            -Doutput="$RUNNER_TEMP/artifact-final-name.txt"
+          printf 'jar-name=%s.jar\n' "$(cat "$RUNNER_TEMP/artifact-final-name.txt")" >> "$GITHUB_OUTPUT"
       - name: Upload canonical artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: canonical-java17
-          path: target/common-lib-2.0.0.jar
+          path: target/${{ steps.artifact.outputs.jar-name }}
           if-no-files-found: error
       - name: Retain diagnostics
         if: always()
@@ -65,9 +75,11 @@ jobs:
         run: mvn --version
       - name: Fresh build and canonical artifact runtime verification
         shell: bash
+        env:
+          CANONICAL_JAR: ${{ needs.canonical.outputs.jar-name }}
         run: >-
           mvn --batch-mode --no-transfer-progress clean verify
-          -Dcompatibility.jar="$GITHUB_WORKSPACE/canonical-artifact/common-lib-2.0.0.jar"
+          "-Dcompatibility.jar=$GITHUB_WORKSPACE/canonical-artifact/$CANONICAL_JAR"
       - name: Validate handwritten Javadoc at the endpoints
         if: matrix.java == '17' || matrix.java == '27'
         shell: bash
