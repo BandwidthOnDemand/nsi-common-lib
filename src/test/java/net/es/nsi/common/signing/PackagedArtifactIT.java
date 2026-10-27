@@ -17,15 +17,15 @@ class PackagedArtifactIT {
     @TempDir Path directory;
 
     /**
-     * Checks local and selected artifacts and runtime-selected dependency bytecode across the window.
+     * Checks local and selected artifacts and dependency bytecode on each supported Java version.
      * @throws Exception if packaging or compatibility checks fail
      */
     @Test
-    void packagedBytecodeSupportsTheWholeWindow() throws Exception {
+    void packagedBytecodeSupportsDeclaredJavaVersions() throws Exception {
         BytecodeCompatibility.library(Path.of(System.getProperty("compatibility.localJar")));
         BytecodeCompatibility.library(selectedJar());
         for (Path dependency : dependencies()) {
-            for (int javaVersion = 17; javaVersion <= 27; javaVersion++) {
+            for (int javaVersion : List.of(17, 21, 25, 27)) {
                 BytecodeCompatibility.dependency(dependency, javaVersion);
             }
         }

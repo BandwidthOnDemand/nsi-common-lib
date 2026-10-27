@@ -186,7 +186,8 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>[17,28)</version>
+                  <version>[17,18),[21,22),[25,26),[27,28)</version>
+                  <message>Build with Java 17, 21, 25, or 27.</message>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>[3.9,)</version>
