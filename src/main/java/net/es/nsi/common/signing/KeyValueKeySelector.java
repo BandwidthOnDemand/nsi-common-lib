@@ -14,15 +14,23 @@ import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 
 /**
+ * Selects the first compatible raw public key from embedded {@code KeyValue} data.
+ *
+ * <p>Only RSA-SHA256 and DSA-SHA256 signatures are supported. Selection checks
+ * algorithm compatibility; it does not authenticate the key owner or establish trust.
  *
  * @author hacksaw
  */
 public class KeyValueKeySelector extends KeySelector {
     /**
-     * KeySelector which retrieves the public key out of the
-     * KeyValue element and returns it.
-     * NOTE: If the key algorithm doesn't match signature algorithm,
-     * then the public key will be ignored.
+     * Returns the first embedded raw public key compatible with the signature method.
+     *
+     * @param keyInfo embedded key information to inspect
+     * @param purpose requested key purpose; not used by this selector
+     * @param method signature method whose algorithm must match the key
+     * @param context calling XML context; not used by this selector
+     * @return the first matching key
+     * @throws KeySelectorException if key information is absent, unreadable, or contains no compatible key
      */
     @Override
     public KeySelectorResult select(KeyInfo keyInfo,
@@ -45,7 +53,6 @@ public class KeyValueKeySelector extends KeySelector {
                 } catch (KeyException ke) {
                     throw new KeySelectorException(ke);
                 }
-                // make sure algorithm is compatible with method
                 if (algEquals(sm.getAlgorithm(), pk.getAlgorithm())) {
                     return new SimpleKeySelectorResult(pk);
                 }
@@ -54,16 +61,14 @@ public class KeyValueKeySelector extends KeySelector {
         throw new KeySelectorException("No KeyValue element found!");
     }
 
-    //@@@FIXME: this should also work for key types other than DSA/RSA
+    /**
+     * Tests the shared signing algorithm policy.
+     *
+     * @param algURI XML signature-method URI
+     * @param algName JCA key algorithm name
+     * @return {@code true} if the pair is supported and compatible
+     */
     static boolean algEquals(String algURI, String algName) {
-        if (algName.equalsIgnoreCase("DSA") &&
-            algURI.equalsIgnoreCase(SignatureMethod.DSA_SHA1)) {
-            return true;
-        } else if (algName.equalsIgnoreCase("RSA") &&
-                   algURI.equalsIgnoreCase(SignatureMethod.RSA_SHA1)) {
-            return true;
-        } else {
-            return false;
-        }
+        return SignatureAlgorithms.matches(algURI, algName);
     }
 }

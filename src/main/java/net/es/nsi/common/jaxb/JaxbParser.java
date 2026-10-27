@@ -1,20 +1,19 @@
 package net.es.nsi.common.jaxb;
 
 import java.io.BufferedInputStream;
+import org.xml.sax.SAXException;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Optional;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,46 +25,76 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
- * A singleton to load the very expensive JAXBContext once.
+ * Binds XML to generated JAXB models using one cached context per parser instance.
+ *
+ * <p>Each operation creates its own marshaller or unmarshaller. Binding state can be
+ * reused across threads; callers must coordinate access to shared files and mutable
+ * model objects. String input is already decoded text; stream input honors the XML
+ * encoding declaration. Parsed input rejects DTDs and leaves borrowed streams open.
+ *
+ * <p>The generated root must be represented by a {@link JAXBElement}; typed parsing
+ * also verifies the root's declared Java type.
  *
  * @author hacksaw
  */
 public class JaxbParser {
+  /**
+   * Logger for JAXB serialization diagnostics.
+   */
   private final static Logger LOG = LogManager.getLogger(JaxbParser.class);
-  private JAXBContext jc;
+  /**
+   * Cached binding metadata; mutable marshaller and unmarshaller instances are never shared.
+   */
+  private final JAXBContext jc;
 
+  /**
+   * Initializes binding metadata for one or more colon-separated packages.
+   *
+   * @param packages JAXB context path containing generated binding packages
+   * @throws IllegalArgumentException if JAXB cannot initialize the requested context
+   */
   public JaxbParser(String packages) {
     try {
-      // Load a JAXB context.
       jc = JAXBContext.newInstance(packages);
     } catch (JAXBException jaxb) {
-      LOG.error("JaxbParser: Failed to load JAXB instance for packages " + packages, jaxb);
+      throw new IllegalArgumentException("Cannot initialize JAXB context for packages " + packages, jaxb);
     }
   }
 
+  /**
+   * Creates a per-operation marshaller with formatted output enabled.
+   *
+   * @return a new marshaller
+   * @throws JAXBException if the provider cannot create or configure the marshaller
+   */
   private Marshaller marshaller() throws JAXBException {
     Marshaller marshaller = jc.createMarshaller();
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
     return marshaller;
   }
 
+  /**
+   * Creates a per-operation unmarshaller so parsing state is never shared.
+   *
+   * @return a new unmarshaller
+   * @throws JAXBException if the provider cannot create the unmarshaller
+   */
   private Unmarshaller unmarshaller() throws JAXBException {
     return jc.createUnmarshaller();
   }
 
   /**
-   * Parse the given file into the specified JAXB object.
+   * Reads a model from a file and closes the streams opened for that file.
    *
-   * @param <T> Target type of the JAXB object.
-   * @param xmlClass Target class of the JAXB object.
-   * @param file The file containing the XML document.
-   * @return The target JAXB object.
-   * @throws JAXBException Could not parse the specified XML document.
-   * @throws IOException Could not open the specified file.
+   * @param <T> expected root value type
+   * @param xmlClass expected generated root class
+   * @param file path of the XML input file
+   * @return the parsed root value
+   * @throws JAXBException if XML, the root namespace, or the declared root type is invalid
+   * @throws IOException if the file cannot be opened or read
    */
   public <T extends Object> T parseFile(Class<T> xmlClass, String file)
           throws JAXBException, IOException {
-    // Parse the specified file.
     try (FileInputStream fileInputStream = new FileInputStream(file);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
       return xml2Jaxb(xmlClass, bufferedInputStream);
@@ -73,12 +102,14 @@ public class JaxbParser {
   }
 
   /**
-   * Write the JAXB object to the specified file.
+   * Writes formatted XML, creating missing parent directories and replacing existing content.
    *
-   * @param jaxbElement The JAXB element to write to file.
-   * @param file The filename of the target file.
-   * @throws JAXBException Could not convert the JAXB object to an XML document.
-   * @throws IOException The specified file could not be created.
+   * <p>Streams opened for the file are closed before this method returns.
+   *
+   * @param jaxbElement root element containing the model to write
+   * @param file destination path
+   * @throws JAXBException if the model cannot be marshalled
+   * @throws IOException if the destination cannot be created or written
    */
   public void writeFile(JAXBElement<?> jaxbElement, String file) throws JAXBException, IOException {
     File fd = new File(file);
@@ -87,24 +118,23 @@ public class JaxbParser {
       FileUtils.touch(fd);
     }
 
-    // Parse the specified file.
+    // This method owns both output wrappers and closes them even if marshalling fails.
     try (FileOutputStream fileOutputStream = new FileOutputStream(file);
             BufferedOutputStream bufferedOutputStream =
                     new BufferedOutputStream(fileOutputStream)) {
-      marshaller().marshal(jaxbElement, fileOutputStream);
+      marshaller().marshal(jaxbElement, bufferedOutputStream);
     }
   }
 
   /**
-   * Convert the specified JAXB object to a DOM object.
+   * Marshals a root element into a new namespace-aware DOM document.
    *
-   * @param jaxbElement JAXB object to convert.
-   * @return The converted DOM object.
-   * @throws JAXBException JAXB object could not be converted to DOM object.
-   * @throws ParserConfigurationException Could not create a DOM document builder.
+   * @param jaxbElement root element and value to serialize
+   * @return a new document containing the serialized model
+   * @throws JAXBException if marshalling fails
+   * @throws ParserConfigurationException if a document builder cannot be created
    */
   public Document jaxb2Dom(JAXBElement<?> jaxbElement) throws JAXBException, ParserConfigurationException {
-    // Convert JAXB representation to DOM.
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     dbf.setNamespaceAware(true);
     DocumentBuilder db = dbf.newDocumentBuilder();
@@ -114,51 +144,69 @@ public class JaxbParser {
   }
 
   /**
-   * Covert specified DOM object to JAXB.
+   * Unmarshals an existing DOM document using this parser context.
    *
-   * @param doc The DOM object to convert.
-   * @return The converted JAXB object.
-   * @throws JAXBException JAXBException JAXB object could not be created.
+   * <p>The caller is responsible for how the DOM was originally parsed.
+   *
+   * @param doc non-null document with a root mapped as a JAXB element
+   * @return the unmarshalled root element
+   * @throws JAXBException if the document cannot be bound to this context
+   * @throws ClassCastException if the bound root is not represented by a JAXB element
    */
   public JAXBElement<?> dom2Jaxb(Document doc) throws JAXBException {
     return (JAXBElement<?>) unmarshaller().unmarshal(doc);
   }
 
+  /**
+   * Unmarshals a DOM element or document node using this parser context.
+   *
+   * @param node non-null node with a root mapped as a JAXB element
+   * @return the unmarshalled root element
+   * @throws JAXBException if the node cannot be bound to this context
+   * @throws ClassCastException if the bound root is not represented by a JAXB element
+   */
   public JAXBElement<?> node2Jaxb(Node node) throws JAXBException {
     return (JAXBElement<?>) unmarshaller().unmarshal(node);
   }
 
   /**
-   * Convert the specified JAXB object to a string.
+   * Serializes a JAXB root element to formatted XML characters.
    *
-   * @param jaxbElement JAXB object to convert.
-   * @return A serialized XML string.
-   * @throws JAXBException JAXB object could not be created.
+   * @param jaxbElement root element and value to serialize
+   * @return XML text with a UTF-8 declaration
+   * @throws JAXBException if the model cannot be marshalled
    */
   public String jaxb2Xml(JAXBElement<?> jaxbElement) throws JAXBException {
-    // We will write the XML encoding into a string.
+    // A character writer preserves text independently of any platform-default charset.
     StringWriter writer = new StringWriter();
     String result;
     try {
       marshaller().marshal(jaxbElement, writer);
       result = writer.toString();
     } catch (JAXBException ex) {
-      // Something went wrong so get out of here.
+      // Preserve the binding failure for callers while recording serialization context.
       LOG.error("Failed to serialize JAXB structure.", ex);
       throw ex;
     } finally {
       try {
         writer.close();
       } catch (IOException ex) {
+        // StringWriter owns no external resource and remains readable after closure.
       }
     }
 
-    // Return the XML string.
     return result;
   }
 
+  /**
+   * Serializes a JAXB root element to formatted XML characters.
+   *
+   * @param jaxbElement root element and value to serialize
+   * @return XML text with a UTF-8 declaration
+   * @throws JAXBException if the model cannot be marshalled
+   */
   public String jaxb2XmlFormatter(JAXBElement<?> jaxbElement) throws JAXBException {
-    // We will write the XML encoding into a string.
+    // A character writer preserves text independently of any platform-default charset.
     StringWriter writer = new StringWriter();
     String result;
     try {
@@ -167,131 +215,121 @@ public class JaxbParser {
       marshaller.marshal(jaxbElement, writer);
       result = writer.toString();
     } catch (JAXBException ex) {
-      // Something went wrong so get out of here.
+      // Preserve the binding failure for callers while recording serialization context.
       LOG.error("Failed to serialize JAXB structure.", ex);
       throw ex;
     } finally {
       try {
         writer.close();
       } catch (IOException ex) {
+        // StringWriter owns no external resource and remains readable after closure.
       }
     }
 
-    // Return the XML string.
     return result;
   }
 
   /**
-   * Convert the specified string representation of a XML document to a JAXB object.
+   * Binds already-decoded XML characters to the exact expected root type.
    *
-   * @param <T> Target type of the JAXB object.
-   * @param xmlClass The target class of the JAXB object.
-   * @param xml The string containing the XML document to convert.
-   * @return JAXB object representing the XML document.
-   * @throws JAXBException Could not parse the specified XML document.
+   * <p>An encoding declaration does not reinterpret Java string characters.
+   *
+   * @param <T> expected root value type
+   * @param xmlClass expected generated root class
+   * @param xml non-null XML character input
+   * @return the parsed root value
+   * @throws JAXBException if secure XML parsing, root binding, or type matching fails
    */
   public <T extends Object> T xml2Jaxb(Class<T> xmlClass, String xml) throws JAXBException, IllegalArgumentException {
-    Optional<JAXBElement> element = Optional.empty();
-    try (StringReader reader = new StringReader(xml)) {
-      Object unmarshalled = unmarshaller().unmarshal(reader);
-      if (unmarshalled instanceof JAXBElement) {
-        element = Optional.ofNullable((JAXBElement) unmarshalled);
-      }
+    try {
+      return unmarshal(xmlClass, DomParser.xml2Dom(xml));
+    } catch (IOException | ParserConfigurationException | SAXException ex) {
+      throw new JAXBException("Could not parse XML", ex);
     }
-
-    if (!element.isPresent()) {
-      throw new IllegalArgumentException("Unable to convert string to JAXB, class="
-              + xmlClass.getName() + ", xml=\n" + xml);
-    } else if (element.get().getDeclaredType() == xmlClass) {
-      return xmlClass.cast(element.get().getValue());
-    }
-
-    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found "
-            + element.get().getDeclaredType().getCanonicalName());
   }
 
   /**
-   * Convert the XML document contained in the InputStream to a JAXB object.
+   * Binds XML bytes while preserving caller ownership of the input stream.
    *
-   * @param <T> Target type of the JAXB object.
-   * @param xmlClass The target class of the JAXB object.
-   * @param is InputStream containing the XML document.
-   * @return JAXB object representing the XML document.
-   * @throws JAXBException Could not parse the specified XML document.
-   * @throws IOException InputStream could not be read.
+   * @param <T> expected root value type
+   * @param xmlClass expected generated root class
+   * @param is non-null borrowed stream whose encoding follows its XML declaration
+   * @return the parsed root value
+   * @throws JAXBException if secure XML parsing, root binding, or type matching fails
+   * @throws IOException if the stream cannot be read
    */
   public <T extends Object> T xml2Jaxb(Class<T> xmlClass, InputStream is) throws JAXBException, IOException {
-    Optional<JAXBElement> element = Optional.empty();
-    Object unmarshalled = unmarshaller().unmarshal(is);
-    if (unmarshalled instanceof JAXBElement) {
-      element = Optional.ofNullable((JAXBElement) unmarshalled);
+    try {
+      return unmarshal(xmlClass, DomParser.xml2Dom(is));
+    } catch (ParserConfigurationException | SAXException ex) {
+      throw new JAXBException("Could not parse XML", ex);
     }
-
-    if (!element.isPresent()) {
-      throw new IllegalArgumentException("Unable to convert stream to JAXB, class=" + xmlClass.getName());
-    } else if (element.get().getDeclaredType() == xmlClass) {
-      return xmlClass.cast(element.get().getValue());
-    }
-
-    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found "
-            + element.get().getDeclaredType().getCanonicalName());
   }
 
   /**
-   * Convert the XML document contained in the BufferedInputStream to a JAXB object.
+   * Binds XML bytes while preserving caller ownership of the input stream.
    *
-   * @param <T> Target type of the JAXB object.
-   * @param xmlClass The target class of the JAXB object.
-   * @param is BufferedInputStream containing the XML document.
-   * @return JAXB object representing the XML document.
-   * @throws JAXBException Could not parse the specified XML document.
-   * @throws IOException BufferedInputStream could not be read.
+   * @param <T> expected root value type
+   * @param xmlClass expected generated root class
+   * @param is non-null borrowed stream whose encoding follows its XML declaration
+   * @return the parsed root value
+   * @throws JAXBException if secure XML parsing, root binding, or type matching fails
+   * @throws IOException if the stream cannot be read
    */
   public <T extends Object> T xml2Jaxb(Class<T> xmlClass, BufferedInputStream is) throws JAXBException, IOException {
-    Optional<JAXBElement> element = Optional.empty();
-    Object unmarshalled = unmarshaller().unmarshal(is);
-    if (unmarshalled instanceof JAXBElement) {
-      element = Optional.ofNullable((JAXBElement) unmarshalled);
-    }
-
-    if (!element.isPresent()) {
-      throw new IllegalArgumentException("Unable to convert stream to JAXB, class=" + xmlClass.getName());
-    } else if (element.get().getDeclaredType() == xmlClass) {
-      return xmlClass.cast(element.get().getValue());
-    }
-
-    throw new JAXBException("Expected XML for class " + xmlClass.getCanonicalName() + " but found "
-            + element.get().getDeclaredType().getCanonicalName());
+    return xml2Jaxb(xmlClass, (InputStream) is);
   }
 
   /**
-   * Utility method to marshal a JAXB annotated java object to an XML string.
+   * Checks the root wrapper and declared type after context-based unmarshalling.
    *
-   * @param <T>
-   * @param messageClass	The class of the object to marshal.
-   * @param message             The object to marshal.
-   * @return                    String containing the XML encoded object.
+   * @param <T> expected root value type
+   * @param xmlClass expected generated root class
+   * @param document already parsed namespace-aware document
+   * @return the matching root value
+   * @throws JAXBException if binding or the root wrapper/type contract fails
+   */
+  private <T> T unmarshal(Class<T> xmlClass, Document document) throws JAXBException {
+    Object value = unmarshaller().unmarshal(document);
+    if (value instanceof JAXBElement<?> element) {
+      if (element.getDeclaredType() == xmlClass) {
+        return xmlClass.cast(element.getValue());
+      }
+      throw new JAXBException("Expected XML for " + xmlClass.getName() + " but found "
+              + element.getDeclaredType().getName());
+    }
+    throw new JAXBException("Expected a JAXB element for " + xmlClass.getName());
+  }
+
+  /**
+   * Serializes an arbitrary bound value beneath the synthetic root {@code {uri}local}.
+   *
+   * <p>A fresh class-based context is used for this standalone convenience method.
+   * JAXB failures are logged and returned as null.
+   *
+   * @param <T> declared value type
+   * @param messageClass bound value class, or null
+   * @param message value assignable to that class, or null
+   * @return XML text, or null for absent arguments or a JAXB failure
+   * @throws ClassCastException if the value is incompatible with the declared class
    */
   public static <T extends Object> String jaxb2String(Class<T> messageClass, Object message) {
 
-    // Make sure we are given the correct input.
     if (messageClass == null || message == null) {
       return null;
     }
 
-    // We will write the XML encoding into a string.
+    // A character writer preserves text independently of any platform-default charset.
     StringWriter writer = new StringWriter();
 
     try {
-      // We do not have @XmlRootElement annotations on the classes so
-      // we need to manually create the JAXBElement.
+      // An explicit root also supports generated values without @XmlRootElement.
       JAXBElement<T> element = new JAXBElement<T>(new QName("uri", "local"), messageClass, messageClass.cast(message));
 
-      // Marshal the object.
       final JAXBContext jaxbContext = JAXBContext.newInstance(messageClass);
       jaxbContext.createMarshaller().marshal(element, writer);
     } catch (JAXBException e) {
-      // Something went wrong so get out of here.
+      // Preserve the legacy null result while retaining diagnostics in the log.
       LOG.error("[JaxbParser] jaxb2String: Error marshalling object "
               + messageClass.getName() + ": " + e.toString());
       return null;

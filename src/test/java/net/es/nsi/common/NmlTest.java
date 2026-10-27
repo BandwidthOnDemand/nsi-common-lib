@@ -2,8 +2,8 @@ package net.es.nsi.common;
 
 import java.io.IOException;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import net.es.nsi.common.jaxb.NmlParser;
 import net.es.nsi.common.jaxb.nml.NmlBidirectionalPortType;
 import net.es.nsi.common.jaxb.nml.NmlNetworkObject;
@@ -11,48 +11,76 @@ import net.es.nsi.common.jaxb.nml.NmlPortGroupType;
 import net.es.nsi.common.jaxb.nml.NmlTopologyRelationType;
 import net.es.nsi.common.jaxb.nml.NmlTopologyType;
 import net.es.nsi.common.jaxb.nml.ServiceDefinitionType;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
+ * Fixture-based regression coverage for extracting bidirectional topology ports.
  *
  * @author hacksaw
  */
 public class NmlTest {
+  /**
+   * Repository topology fixture used by this suite.
+   */
   private static final String NML_DOCUMENT = "src/test/resources/nml.xml";
+  /**
+   * Legacy output-path constant retained with the existing fixture.
+   */
   private static final String TARGET_FILE = "target/nml-test.xml";
 
+  /**
+   * Fresh mutable topology model owned by this test instance.
+   */
   NmlTopologyType nmlType;
 
+  /**
+   * Loads a fresh topology fixture for each test instance.
+   *
+   * @throws JAXBException if fixture preparation or the exercised API fails unexpectedly
+   * @throws IOException if fixture preparation or the exercised API fails unexpectedly
+   */
   public NmlTest() throws JAXBException, IOException {
     nmlType = NmlParser.getInstance().readDocument(NML_DOCUMENT);
   }
 
-  @BeforeClass
+  /**
+   * No suite-wide initialization is required by this fixture.
+   */
+  @BeforeAll
   public static void setUpClass() {
   }
 
-  @AfterClass
+  /**
+   * No suite-wide cleanup is required by this fixture.
+   */
+  @AfterAll
   public static void tearDownClass() {
   }
 
-  @Before
+  /**
+   * No additional per-test setup is required.
+   */
+  @BeforeEach
   public void setUp() {
   }
 
-  @After
+  /**
+   * No additional per-test cleanup is required.
+   */
+  @AfterEach
   public void tearDown() {
   }
 
   /**
-   * Test bidirectionalPort elements.
+   * Checks the fixture port count and a known bidirectional port identifier.
    *
-   * @throws java.lang.Exception
+   * @throws Exception if fixture preparation or the exercised API fails unexpectedly
    */
   @Test
   public void bidirectionalPortTest() throws Exception {
@@ -73,9 +101,9 @@ public class NmlTest {
   }
 
   /**
-   * Validates all associated NML schema are loaded properly.
+   * Asserts the topology identifier and bound service-definition and Ethernet extensions.
    *
-   * @param nml
+   * @param nml parsed topology fixture
    */
   private void validateDocument(NmlTopologyType nml) {
     // Verify we have the expected topologyId from NML document namespace.
@@ -93,7 +121,7 @@ public class NmlTest {
     }
     assertTrue(found);
 
-    // Verify the ServiceDefinition schema is valid.
+    // Check that the imported service-definition element has its generated Java type.
     found = false;
     for (Object obj : nml.getAny()) {
       if (obj instanceof JAXBElement) {
@@ -109,7 +137,7 @@ public class NmlTest {
     }
     assertTrue(found);
 
-    // Verify Ethernet schema is valid.
+    // Check that the Ethernet extension retains its namespace and numeric Java type.
     found = false;
     for (NmlTopologyRelationType relation : nml.getRelation()) {
       if (Nml.hasInboundPort(relation.getType())) {
@@ -135,7 +163,10 @@ public class NmlTest {
     assertTrue(found);
   }
 
+  /**
+   * Legacy unused placeholder; throws UnsupportedOperationException when invoked.
+   */
   private void getBidirectionalPorts() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 }

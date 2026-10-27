@@ -3,20 +3,24 @@ package net.es.nsi.common.jaxb;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import net.es.nsi.common.jaxb.nsa.NsaType;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
+ * Tests generic JAXB parsing of an NSA discovery fixture from characters and bytes.
  *
  * @author hacksaw
  */
 public class JaxbParserTest {
+  /**
+   * Discovery XML including vCard and routing namespaces for binding compatibility.
+   */
   private static final String document = "<ns4:nsa xmlns:ns4=\"http://schemas.ogf.org/nsi/2014/02/discovery/nsa\" xmlns:ns2=\"urn:ietf:params:xml:ns:vcard-4.0\" xmlns:ns3=\"http://nordu.net/namespaces/2013/12/gnsbod\" expires=\"2023-03-20T06:27:57.136-07:00\" id=\"urn:ogf:network:netherlight.net:2013:nsa:safnari\" version=\"2022-03-20T13:25:04.281Z\">\n" +
 "<name>NetherLight Safnari</name>\n" +
 "<softwareVersion>2.1.3-SNAPSHOT (502f04d)</softwareVersion>\n" +
@@ -77,29 +81,46 @@ public class JaxbParserTest {
 "<peersWith>urn:ogf:network:calit2.optiputer.net:2020:nsa</peersWith>\n" +
 "</ns4:nsa>";
 
+  /**
+   * Creates the test fixture; no constructor setup is required.
+   */
   public JaxbParserTest() {
   }
 
-  @BeforeClass
+  /**
+   * No suite-wide initialization is required by this fixture.
+   */
+  @BeforeAll
   public static void setUpClass() {
   }
 
-  @AfterClass
+  /**
+   * No suite-wide cleanup is required by this fixture.
+   */
+  @AfterAll
   public static void tearDownClass() {
   }
 
-  @Before
+  /**
+   * No additional per-test setup is required.
+   */
+  @BeforeEach
   public void setUp() {
   }
 
-  @After
+  /**
+   * No additional per-test cleanup is required.
+   */
+  @AfterEach
   public void tearDown() {
   }
 
   /**
-   * Test of xml2Jaxb method, of class JaxbParser.
+   * Checks that both input overloads bind the expected discovery identifier.
    *
-   * @throws javax.xml.bind.JAXBException
+   * @throws JAXBException if fixture preparation or the exercised API fails unexpectedly
+   * @throws IllegalArgumentException if fixture preparation or the exercised API fails unexpectedly
+   * @throws IOException if fixture preparation or the exercised API fails unexpectedly
    */
   @Test
   public void testXml2Jaxb() throws JAXBException, IllegalArgumentException, IOException {

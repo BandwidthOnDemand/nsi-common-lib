@@ -1,14 +1,19 @@
 package net.es.nsi.common;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 /**
+ * Boundary tests for individual VLAN and MPLS labels and validated type changes.
  *
  * @author hacksaw
  */
 public class SimpleLabelTest {
 
+  /**
+   * Checks both VLAN endpoints and a valid value mutation.
+   */
   @Test
   public void testVlan() {
     SimpleLabel l1 = new SimpleLabel(SimpleLabel.NSI_EVTS_LABEL_TYPE, "0");
@@ -28,6 +33,9 @@ public class SimpleLabelTest {
     assertEquals("300", l3.getValue());
   }
 
+  /**
+   * Checks both MPLS endpoints and a valid value mutation.
+   */
   @Test
   public void testMpls() {
     SimpleLabel l1 = new SimpleLabel(SimpleLabel.NSI_MPLS_LABEL_TYPE, "0");
@@ -47,37 +55,62 @@ public class SimpleLabelTest {
     assertEquals("300", l3.getValue());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects the first value above the VLAN domain.
+   */
+  @Test
   public void illegalVlanHigh() {
-    SimpleLabel simpleLabel = new SimpleLabel(SimpleLabel.NSI_EVTS_LABEL_TYPE, "4096");
+    assertThrows(IllegalArgumentException.class,
+            () -> new SimpleLabel(SimpleLabel.NSI_EVTS_LABEL_TYPE, "4096"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects negative VLAN values.
+   */
+  @Test
   public void illegalVlanLow() {
-    SimpleLabel simpleLabel = new SimpleLabel(SimpleLabel.NSI_EVTS_LABEL_TYPE, "-1");
+    assertThrows(IllegalArgumentException.class,
+            () -> new SimpleLabel(SimpleLabel.NSI_EVTS_LABEL_TYPE, "-1"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects the first value above the MPLS domain.
+   */
+  @Test
   public void illegalMplsHigh() {
-    SimpleLabel simpleLabel = new SimpleLabel(SimpleLabel.NSI_MPLS_LABEL_TYPE, "1048576");
+    assertThrows(IllegalArgumentException.class,
+            () -> new SimpleLabel(SimpleLabel.NSI_MPLS_LABEL_TYPE, "1048576"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects negative MPLS values.
+   */
+  @Test
   public void illegalMplsLow() {
-    SimpleLabel simpleLabel = new SimpleLabel(SimpleLabel.NSI_MPLS_LABEL_TYPE, "-1");
+    assertThrows(IllegalArgumentException.class,
+            () -> new SimpleLabel(SimpleLabel.NSI_MPLS_LABEL_TYPE, "-1"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects a label type outside the supported short names.
+   */
+  @Test
   public void illegalLabel() {
-    SimpleLabel simpleLabel = new SimpleLabel("poop", "999");
+    assertThrows(IllegalArgumentException.class, () -> new SimpleLabel("poop", "999"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects changing an MPLS label to VLAN when its value exceeds the VLAN domain.
+   */
+  @Test
   public void illegalValueforLabel() {
     SimpleLabel l2 = new SimpleLabel(SimpleLabel.NSI_MPLS_LABEL_TYPE, "1048575");
-    l2.setType(SimpleLabel.NSI_EVTS_LABEL_TYPE);
+    assertThrows(IllegalArgumentException.class, () -> l2.setType(SimpleLabel.NSI_EVTS_LABEL_TYPE));
   }
 
+  /**
+   * Retains the numeric value when switching to another compatible label type.
+   */
   @Test
   public void testLabelSwitch() {
     SimpleLabel l2 = new SimpleLabel(SimpleLabel.NSI_MPLS_LABEL_TYPE, "600");

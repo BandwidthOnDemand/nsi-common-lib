@@ -3,17 +3,27 @@ package net.es.nsi.common;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import static net.es.nsi.common.NmlEthernet.isVlanLabel;
 import net.es.nsi.common.jaxb.nml.NmlLabelGroupType;
 import net.es.nsi.common.jaxb.nml.NmlLabelType;
 
 /**
+ * Converts NML VLAN label groups and compares JAXB label values semantically.
+ *
+ * <p>Generated JAXB model classes use object identity by default. The comparison and
+ * intersection helpers compare label type and value instead, without modifying inputs.
  *
  * @author hacksaw
  */
 public class NmlLabels {
 
+  /**
+   * Expands a VLAN label group into distinct, validated numeric labels.
+   *
+   * @param labelGroup non-null VLAN group with a non-empty value specification
+   * @return new JAXB labels in first-occurrence order
+   * @throws IllegalArgumentException if the group type, syntax, bounds, or range size is unsupported
+   */
   public static Set<NmlLabelType> labelGroupToLabels(NmlLabelGroupType labelGroup) {
 
     Optional<String> labelType = Optional.ofNullable(labelGroup.getLabeltype());
@@ -21,46 +31,30 @@ public class NmlLabels {
       throw new IllegalArgumentException("Invalid vlan label: " + labelGroup.getLabeltype());
     }
 
-    Set<NmlLabelType> labels = new LinkedHashSet<>();
-
-    // Split the vlan first by comma, then by hyphen.
-    Pattern pattern = Pattern.compile(",");
-    String[] comma = pattern.split(labelGroup.getValue());
-    for (int i = 0; i < comma.length; i++) {
-      // Now by hyphen.
-      pattern = Pattern.compile("-");
-      String[] hyphen = pattern.split(comma[i]);
-
-      // Just a single vlan.
-      if (hyphen.length == 1) {
-        NmlLabelType label = new NmlLabelType();
-        label.setLabeltype(labelGroup.getLabeltype());
-        label.setValue(hyphen[0]);
-        labels.add(label);
-      } // Two vlans in a range.
-      else if (hyphen.length > 1 && hyphen.length < 3) {
-        int min = Integer.parseInt(hyphen[0]);
-        int max = Integer.parseInt(hyphen[1]);
-        for (int j = min; j < max + 1; j++) {
-          NmlLabelType label = new NmlLabelType();
-          label.setLabeltype(labelGroup.getLabeltype());
-          label.setValue(Integer.toString(j));
-          labels.add(label);
-        }
-      } // This is unsupported.
-      else {
-        throw new IllegalArgumentException("Invalid vlan string format: " + labelGroup.getValue());
-      }
+    String values = labelGroup.getValue();
+    if (values == null || values.isBlank() || values.contains(";") || values.contains("=")) {
+      throw new IllegalArgumentException("Invalid vlan values: " + values);
     }
+    Set<NmlLabelType> labels = new LinkedHashSet<>();
+    for (SimpleLabel value : SimpleLabels.fromString("vlan=" + values)) {
+      NmlLabelType label = new NmlLabelType();
+      label.setLabeltype(labelGroup.getLabeltype());
+      label.setValue(value.getValue());
+      labels.add(label);
+    }
+
     return labels;
   }
 
   /**
-   * Merge the labels from two uni ports into a single intersecting set for the bidirectional port.
+   * Intersects inbound and outbound labels using semantic type/value comparison.
    *
-   * @param inLabels
-   * @param outLabels
-   * @return
+   * <p>Returned members are the original inbound JAXB objects. A null input set
+   * produces an empty intersection.
+   *
+   * @param inLabels inbound labels, or {@code null}
+   * @param outLabels outbound labels, or {@code null}
+   * @return a new mutable set containing matching inbound members
    */
   public static Set<NmlLabelType> mergeLabels(Set<NmlLabelType> inLabels, Set<NmlLabelType> outLabels) {
     Set<NmlLabelType> results = new LinkedHashSet<>();
@@ -79,10 +73,11 @@ public class NmlLabels {
   }
 
   /**
+   * Compares nullable labels by type and value, ignoring case.
    *
-   * @param a
-   * @param b
-   * @return
+   * @param a first value, or {@code null}
+   * @param b second value, or {@code null}
+   * @return whether the values match, including two null values
    */
   public static boolean labelEquals(NmlLabelType a, NmlLabelType b) {
     if (a == null && b == null) {
@@ -91,7 +86,7 @@ public class NmlLabels {
       return false;
     } else if (b == null) {
       return false;
-    } else if (!a.getLabeltype().equalsIgnoreCase(b.getLabeltype())) {
+    } else if (!same(a.getLabeltype(), b.getLabeltype())) {
       return false;
     }
 
@@ -109,10 +104,13 @@ public class NmlLabels {
   }
 
   /**
+   * Compares nullable label groups by type and value, ignoring case.
    *
-   * @param a
-   * @param b
-   * @return
+   * <p>Group range strings are compared as text; equivalent range expansions are not inferred.
+   *
+   * @param a first value, or {@code null}
+   * @param b second value, or {@code null}
+   * @return whether the values match, including two null values
    */
   public static boolean labelEquals(NmlLabelGroupType a, NmlLabelGroupType b) {
     if (a == null && b == null) {
@@ -121,7 +119,7 @@ public class NmlLabels {
       return false;
     } else if (b == null) {
       return false;
-    } else if (!a.getLabeltype().equalsIgnoreCase(b.getLabeltype())) {
+    } else if (!same(a.getLabeltype(), b.getLabeltype())) {
       return false;
     }
 
@@ -136,5 +134,15 @@ public class NmlLabels {
     }
 
     return true;
+  }
+  /**
+   * Compares optional type names without dereferencing an absent name.
+   *
+   * @param first first name
+   * @param second second name
+   * @return whether both are null or equal ignoring case
+   */
+  private static boolean same(String first, String second) {
+    return first == null ? second == null : first.equalsIgnoreCase(second);
   }
 }

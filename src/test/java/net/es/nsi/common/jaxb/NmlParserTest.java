@@ -1,6 +1,6 @@
 package net.es.nsi.common.jaxb;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import net.es.nsi.common.Nml;
 import net.es.nsi.common.jaxb.nml.NmlBidirectionalPortType;
 import net.es.nsi.common.jaxb.nml.NmlNetworkObject;
@@ -8,44 +8,68 @@ import net.es.nsi.common.jaxb.nml.NmlPortGroupType;
 import net.es.nsi.common.jaxb.nml.NmlTopologyRelationType;
 import net.es.nsi.common.jaxb.nml.NmlTopologyType;
 import net.es.nsi.common.jaxb.nml.ServiceDefinitionType;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
+ * File round-trip tests for topology documents and their imported JAXB schemas.
  *
  * @author hacksaw
  */
 public class NmlParserTest {
+  /**
+   * Repository topology XML fixture.
+   */
   private static final String NML_DOCUMENT = "src/test/resources/nml.xml";
-  private static final String TARGET_FILE = "target/nml-test.xml";
+  /**
+   * JUnit-managed directory that isolates file output between tests.
+   */
+  @org.junit.jupiter.api.io.TempDir
+  java.nio.file.Path directory;
 
+  /**
+   * Creates the test fixture; no constructor setup is required.
+   */
   public NmlParserTest() {
   }
 
-  @BeforeClass
+  /**
+   * No suite-wide initialization is required by this fixture.
+   */
+  @BeforeAll
   public static void setUpClass() {
   }
 
-  @AfterClass
+  /**
+   * No suite-wide cleanup is required by this fixture.
+   */
+  @AfterAll
   public static void tearDownClass() {
   }
 
-  @Before
+  /**
+   * No additional per-test setup is required.
+   */
+  @BeforeEach
   public void setUp() {
   }
 
-  @After
+  /**
+   * No additional per-test cleanup is required.
+   */
+  @AfterEach
   public void tearDown() {
   }
 
   /**
-   * Test of readDocument method, of class NmlParser.
-   * @throws java.lang.Exception
+   * Reads the repository topology fixture and checks its imported schema content.
+   *
+   * @throws Exception if fixture preparation or the exercised API fails unexpectedly
    */
   @Test
   public void testReadDocument() throws Exception {
@@ -54,24 +78,26 @@ public class NmlParserTest {
   }
 
   /**
-   * Test of writeDocument method, of class NmlParser.
-   * @throws java.lang.Exception
+   * Writes the topology fixture to an isolated temporary file and validates it after rereading.
+   *
+   * @throws Exception if fixture preparation or the exercised API fails unexpectedly
    */
   @Test
   public void testWriteDocument() throws Exception {
     NmlTopologyType nml = NmlParser.getInstance().readDocument(NML_DOCUMENT);
+    String TARGET_FILE = directory.resolve("nml.xml").toString();
     NmlParser.getInstance().writeDocument(TARGET_FILE, nml);
     nml = NmlParser.getInstance().readDocument(TARGET_FILE);
     validateDocument(nml);
   }
 
   /**
-   * Validates all associated NML schema are loaded properly.
+   * Asserts representative topology fields and objects from imported schemas.
    *
-   * @param nml
+   * @param nml parsed topology fixture
    */
   private void validateDocument(NmlTopologyType nml) {
-    // Verify we have the expected topologyId from NML document namespace. NmlBidirectionalPortType
+    // Check the topology identity before inspecting imported extension bindings.
     assertEquals("urn:ogf:network:es.net:2013:", nml.getId());
     boolean found = false;
     for (NmlNetworkObject group : nml.getGroup()) {
@@ -84,7 +110,7 @@ public class NmlParserTest {
     }
     assertTrue(found);
 
-    // Verify the ServiceDefinition schema is valid.
+    // Check that the imported service-definition element has its generated Java type.
     found = false;
     for (Object obj : nml.getAny()) {
       if (obj instanceof JAXBElement) {
@@ -100,7 +126,7 @@ public class NmlParserTest {
     }
     assertTrue(found);
 
-    // Verify Ethernet schema is valid.
+    // Check that the Ethernet extension retains its namespace and numeric Java type.
     found = false;
     for (NmlTopologyRelationType relation : nml.getRelation()) {
       if (Nml.hasInboundPort(relation.getType())) {

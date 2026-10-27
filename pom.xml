@@ -5,41 +5,79 @@
 
   <groupId>net.es.nsi</groupId>
   <artifactId>common-lib</artifactId>
-  <version>1.0.1</version>
+  <version>2.0.0</version>
   <packaging>jar</packaging>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.6.4</version>
+    <version>4.1.2</version>
   </parent>
 
   <properties>
+    <java.version>21</java.version>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.scm.id>github</project.scm.id>
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <guava.version>33.7.2-jre</guava.version>
+    <commons-io.version>2.22.0</commons-io.version>
+    <joda-time.version>2.15.0</joda-time.version>
+    <junit-jupiter.version>6.1.3</junit-jupiter.version>
+    <log4j2.version>2.26.1</log4j2.version>
+    <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+    <maven-failsafe-plugin.version>3.6.1</maven-failsafe-plugin.version>
+    <maven-install-plugin.version>3.2.0</maven-install-plugin.version>
+    <maven-deploy-plugin.version>3.2.0</maven-deploy-plugin.version>
+    <versions-maven-plugin.version>2.23.0</versions-maven-plugin.version>
+    <jaxb2-maven-plugin.version>4.2.0</jaxb2-maven-plugin.version>
+    <istack.version>4.2.0</istack.version>
+    <error-prone.version>2.51.0</error-prone.version>
+    <jacoco.version>0.8.16</jacoco.version>
+    <coverage.minimum.line>0.85</coverage.minimum.line>
+    <coverage.minimum.branch>0.75</coverage.minimum.branch>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.sun.istack</groupId>
+        <artifactId>istack-commons-runtime</artifactId>
+        <version>${istack.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.errorprone</groupId>
+        <artifactId>error_prone_annotations</artifactId>
+        <version>${error-prone.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- For JAXB support. -->
     <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>2.3.1</version>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <!-- For content encoding types. -->
     <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>javax.mail-api</artifactId>
-      <version>1.6.2</version>
+      <groupId>jakarta.mail</groupId>
+      <artifactId>jakarta.mail-api</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>javax.mail</artifactId>
-      <version>1.6.2</version>
+      <groupId>org.eclipse.angus</groupId>
+      <artifactId>angus-mail</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <!-- Helper annotations for Getter/Setters and Builders. -->
@@ -51,45 +89,112 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>[30.1.1-jre,]</version>
+      <version>${guava.version}</version>
     </dependency>
 
     <!-- For FileUtils -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>[2.11.0,]</version>
+      <version>${commons-io.version}</version>
     </dependency>
 
     <!-- Log4j for logging. -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <version>[2.17.0,)</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>[2.17.0,)</version>
     </dependency>
 
     <!-- To handle XML dateTime manipulation. -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>[2.10.13,]</version>
+      <version>${joda-time.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>net/es/nsi/common/jaxb/nml/**</exclude>
+            <exclude>net/es/nsi/common/jaxb/nsa/**</exclude>
+            <exclude>net/es/nsi/common/jaxb/signatures/**</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>coverage-agent</id>
+            <goals><goal>prepare-agent</goal></goals>
+          </execution>
+          <execution>
+            <id>coverage-report</id>
+            <goals><goal>report</goal></goals>
+          </execution>
+          <execution>
+            <id>coverage-check</id>
+            <goals><goal>check</goal></goals>
+            <configuration>
+              <rules>
+                <rule>
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>LINE</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>${coverage.minimum.line}</minimum>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>${coverage.minimum.branch}</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>require-build-toolchain</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[21,)</version>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>[3.9,)</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
@@ -101,47 +206,25 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
         <configuration>
-          <!-- Compatible down to java 1.8. Tested 1.8, 11, and 15. -->
-          <source>1.8</source>
-          <target>1.8</target>
-          <!-- <release>11</release> -->
-          <compilerArgument>-Xlint:deprecation</compilerArgument>
-          <compilerArgument>-Xlint:unchecked</compilerArgument>
-        </configuration>
-      </plugin>
-
-
-      <plugin>
-        <!-- We use this plugin to ensure that our usage of the
-        maven-jaxb2-plugin is JDK 8 compatible in absence of a fix
-        for https://java.net/jira/browse/MAVEN_JAXB2_PLUGIN-80. -->
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>1.0-alpha-2</version>
-        <executions>
-          <execution>
-            <id>set-additional-system-properties</id>
-            <goals>
-              <goal>set-system-properties</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <properties>
-            <property>
-              <name>javax.xml.accessExternalDTD</name>
-              <value>file,http,all</value>
-            </property>
-          </properties>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <arg>-Xlint:deprecation</arg>
+            <arg>-Xlint:unchecked</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jaxb2-maven-plugin</artifactId>
-        <version>2.4</version>
+        <version>${jaxb2-maven-plugin.version}</version>
         <executions>
 
           <!-- Here we build the NSI Topology schema. -->
@@ -197,43 +280,15 @@
             </configuration>
           </execution>
         </executions>
-
-        <dependencies>
-          <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-xjc</artifactId>
-            <version>2.3.6</version>
-            <scope>compile</scope>
-          </dependency>
-
-          <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-core</artifactId>
-            <version>2.3.0.1</version>
-            <scope>compile</scope>
-          </dependency>
-
-          <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.6</version>
-            <scope>compile</scope>
-          </dependency>
-        </dependencies>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.0</version>
-        <configuration>
-          <argLine>--illegal-access=permit</argLine>
-        </configuration>
       </plugin>
 
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
-        <version>2.5</version>
         <configuration>
           <filesets>
             <fileset>
@@ -258,20 +313,6 @@
       </build>
     </profile>
   </profiles>
-
-  <repositories>
-    <repository>
-      <id>central</id>
-      <url>https://repo1.maven.org/maven2/</url>
-    </repository>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/BandwidthOnDemand/*</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 
   <distributionManagement>
     <repository>
