@@ -13,5 +13,5 @@ config/repository/*.xml
 /src/test/resources/config/repository/
 /src/main/resources/git.properties
 *.swp
-
+.DS_Store
 src/main/resources/git.properties
