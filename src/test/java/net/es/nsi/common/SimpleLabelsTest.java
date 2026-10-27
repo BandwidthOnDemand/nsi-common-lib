@@ -1,14 +1,19 @@
 package net.es.nsi.common;
 
 import java.util.Set;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 /**
+ * Exercises complete supported label domains and their upper-bound validation.
  *
  * @author hacksaw
  */
 public class SimpleLabelsTest {
+  /**
+   * Expands the full VLAN range and checks the type of every member.
+   */
   @Test
   public void testVlan() {
     Set<SimpleLabel> l1 = SimpleLabels.fromString("vlan=0-4095");
@@ -19,11 +24,17 @@ public class SimpleLabelsTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects a VLAN range extending beyond the supported maximum.
+   */
+  @Test
   public void illegalVlanHigh() {
-    Set<SimpleLabel> l1 = SimpleLabels.fromString("vlan=0-4096");
+    assertThrows(IllegalArgumentException.class, () -> SimpleLabels.fromString("vlan=0-4096"));
   }
 
+  /**
+   * Expands the complete MPLS domain, including the largest permitted bounded range.
+   */
   @Test
   public void testMpls() {
     Set<SimpleLabel> l1 = SimpleLabels.fromString("mpls=0-1048575");
@@ -34,8 +45,11 @@ public class SimpleLabelsTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  /**
+   * Rejects an MPLS range extending beyond the supported maximum.
+   */
+  @Test
   public void illegalMpsHigh() {
-    Set<SimpleLabel> l1 = SimpleLabels.fromString("mpls=0-1048576");
+    assertThrows(IllegalArgumentException.class, () -> SimpleLabels.fromString("mpls=0-1048576"));
   }
 }

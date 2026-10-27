@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import javax.xml.parsers.ParserConfigurationException;
 import net.es.nsi.common.jaxb.DomParser;
 import org.apache.commons.io.IOUtils;
@@ -15,13 +15,28 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
+ * Decodes transfer-encoded content, optionally decompressing gzip before consumption.
+ *
+ * <p>The convenience {@link #decode(String)} method reverses {@link Encoder#encode(Document)}.
+ * Text results use UTF-8; DOM results honor XML byte-encoding declarations and use the
+ * secure parser settings in {@link DomParser}.
  *
  * @author hacksaw
  */
 public class Decoder {
 
+  /**
+   * Logger for decoding and XML parsing failures.
+   */
   private final static Logger LOG = LogManager.getLogger(Decoder.class);
 
+  /**
+   * Decodes Base64-encoded gzip data as UTF-8 text.
+   *
+   * @param doc encoded text; null or empty is treated as absent
+   * @return decoded text, or null for absent input
+   * @throws IOException if Base64 decoding, decompression, or reading fails
+   */
   public static String decode(String doc) throws IOException {
     if (Strings.isNullOrEmpty(doc)) {
       return null;
@@ -30,6 +45,16 @@ public class Decoder {
     return decode2string(ContentTransferEncoding.BASE64, ContentType.XGZIP, doc);
   }
 
+  /**
+   * Creates an open decoded stream, removing transfer encoding before decompression.
+   * The caller owns and must close the returned stream.
+   *
+   * @param contentTransferEncoding MIME transfer encoding; null or empty defaults to 7bit
+   * @param contentType content type; null or empty defaults to text/plain
+   * @param source non-null encoded text
+   * @return decoded bytes exposed through an open stream
+   * @throws IOException if a decoding layer cannot be created
+   */
   public static InputStream decode(String contentTransferEncoding,
           String contentType, String source) throws IOException {
     if (Strings.isNullOrEmpty(contentTransferEncoding)) {
@@ -40,14 +65,30 @@ public class Decoder {
       contentType = ContentType.TEXT;
     }
 
-    try (InputStream ctes = ContentTransferEncoding.decode(contentTransferEncoding, source)) {
-      return ContentType.decode(contentType, ctes);
+    try {
+      InputStream ctes = ContentTransferEncoding.decode(contentTransferEncoding, source);
+      try {
+        return ContentType.decode(contentType, ctes);
+      } catch (IOException ex) {
+        // A failed outer wrapper cannot assume ownership of the transfer decoder.
+        try { ctes.close(); } catch (IOException close) { ex.addSuppressed(close); }
+        throw ex;
+      }
     } catch (UnsupportedEncodingException | MessagingException ex) {
       LOG.error("decode2Dom: failed to parse document", ex);
-      throw new IOException(ex.getMessage(), ex.getCause());
+      throw new IOException(ex.getMessage(), ex);
     }
   }
 
+  /**
+   * Decodes and securely parses XML, closing all internally created decoding streams.
+   *
+   * @param contentTransferEncoding MIME transfer encoding; null or empty defaults to 7bit
+   * @param contentType content type; null or empty defaults to text/plain
+   * @param source non-null encoded text
+   * @return a namespace-aware XML document
+   * @throws IOException if decoding or XML parsing fails; the underlying cause is retained
+   */
   public static Document decode2dom(String contentTransferEncoding,
           String contentType, String source) throws IOException {
 
@@ -55,10 +96,19 @@ public class Decoder {
       return DomParser.xml2Dom(dis);
     } catch (IOException | ParserConfigurationException | SAXException ex) {
       LOG.error("decode2Dom: failed to parse document", ex);
-      throw new IOException(ex.getMessage(), ex.getCause());
+      throw new IOException(ex.getMessage(), ex);
     }
   }
 
+  /**
+   * Decodes content as UTF-8 and closes the internally created decoding streams.
+   *
+   * @param contentTransferEncoding MIME transfer encoding; null or empty defaults to 7bit
+   * @param contentType content type; null or empty defaults to text/plain
+   * @param source non-null encoded text
+   * @return decoded UTF-8 text
+   * @throws IOException if decoding or reading fails
+   */
   public static String decode2string(String contentTransferEncoding,
           String contentType, String source) throws IOException {
 
@@ -67,11 +117,20 @@ public class Decoder {
     }
   }
 
+  /**
+   * Decodes content once and closes the internally created decoding streams.
+   *
+   * @param contentTransferEncoding MIME transfer encoding; null or empty defaults to 7bit
+   * @param contentType content type; null or empty defaults to text/plain
+   * @param source non-null encoded text
+   * @return decoded bytes
+   * @throws IOException if decoding or reading fails
+   */
   public static byte[] decode2ByteArray(String contentTransferEncoding,
           String contentType, String source) throws IOException {
 
     try (InputStream dis = decode(contentTransferEncoding, contentType, source)) {
-      return ContentType.decode2ByteArray(contentType, dis);
+      return IOUtils.toByteArray(dis);
     }
   }
 }
