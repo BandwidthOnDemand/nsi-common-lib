@@ -12,7 +12,7 @@ jobs:
   canonical:
     name: Canonical Java 17 artifact
     runs-on: ubuntu-24.04
-    container: maven:3.10.0-eclipse-temurin-17
+    container: maven:3.10.0-eclipse-temurin-17@sha256:b67db904974d04b9e6eba5b073ae227569ee1cae0d1f26be8993525291ef76dc
     timeout-minutes: 20
     outputs:
       jar-name: ${{ steps.artifact.outputs.jar-name }}
@@ -54,7 +54,7 @@ jobs:
     name: Build and runtime Java ${{ matrix.java }}
     needs: canonical
     runs-on: ubuntu-24.04
-    container: maven:3.10.0-eclipse-temurin-17
+    container: maven:3.10.0-eclipse-temurin-17@sha256:b67db904974d04b9e6eba5b073ae227569ee1cae0d1f26be8993525291ef76dc
     timeout-minutes: 20
     strategy:
       fail-fast: false
