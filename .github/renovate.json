@@ -1,0 +1,50 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "customManagers:mavenPropertyVersions"
+  ],
+  "minimumReleaseAge": "8 days",
+  "internalChecksFilter": "strict",
+  "rebaseWhen": "behind-base-branch",
+  "automerge": false,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update the Java 17 Maven image used by local builds alongside CI",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": [
+        "(?<indentation>(?:^|\\n))MAVEN_IMAGE[ \\t]+\\?=[ \\t]+(?<depName>maven):(?<currentValue>[a-zA-Z0-9._-]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker",
+      "autoReplaceStringTemplate": "{{{indentation}}}MAVEN_IMAGE ?= {{{depName}}}:{{{newValue}}}{{#if newDigest}}@{{{newDigest}}}{{/if}}"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
+    },
+    {
+      "matchUpdateTypes": ["pin", "digest", "pinDigest"],
+      "minimumReleaseAge": "0 days"
+    },
+    {
+      "description": "Keep local and CI Maven images together on fixed Java 17 release tags",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["maven"],
+      "allowedVersions": "/^[0-9]+\\.[0-9]+\\.[0-9]+-eclipse-temurin-17$/",
+      "groupName": "Java 17 Maven build image",
+      "groupSlug": "java17-maven-build-image",
+      "pinDigests": true
+    },
+    {
+      "description": "Java target and supported runtime majors are deliberate compatibility decisions",
+      "matchDatasources": ["java-version"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}
