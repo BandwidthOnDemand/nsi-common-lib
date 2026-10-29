@@ -11,7 +11,7 @@ permissions:
 jobs:
   canonical:
     name: Canonical Java 17 artifact
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container: maven:3.10.0-eclipse-temurin-17@sha256:b67db904974d04b9e6eba5b073ae227569ee1cae0d1f26be8993525291ef76dc
     timeout-minutes: 20
     outputs:
@@ -53,7 +53,7 @@ jobs:
   compatibility:
     name: Build and runtime Java ${{ matrix.java }}
     needs: canonical
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container: maven:3.10.0-eclipse-temurin-17@sha256:b67db904974d04b9e6eba5b073ae227569ee1cae0d1f26be8993525291ef76dc
     timeout-minutes: 20
     strategy:
@@ -103,7 +103,7 @@ jobs:
     name: Java compatibility
     if: always()
     needs: [canonical, compatibility]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Require every build and runtime check
         env:
