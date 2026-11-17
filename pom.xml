@@ -21,7 +21,7 @@
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <guava.version>33.7.2-jre</guava.version>
+    <guava.version>33.8.0-jre</guava.version>
     <commons-io.version>2.22.0</commons-io.version>
     <joda-time.version>2.15.1</joda-time.version>
     <!-- renovate: depName=org.junit.jupiter:junit-jupiter -->
@@ -39,10 +39,10 @@
     <!-- renovate: depName=org.apache.maven.plugins:maven-deploy-plugin -->
     <maven-deploy-plugin.version>3.2.0</maven-deploy-plugin.version>
     <!-- renovate: depName=org.codehaus.mojo:versions-maven-plugin -->
-    <versions-maven-plugin.version>2.23.0</versions-maven-plugin.version>
-    <jaxb2-maven-plugin.version>4.2.0</jaxb2-maven-plugin.version>
+    <versions-maven-plugin.version>2.25.1</versions-maven-plugin.version>
+    <jaxb2-maven-plugin.version>4.3.0</jaxb2-maven-plugin.version>
     <istack.version>4.2.0</istack.version>
-    <error-prone.version>2.51.0</error-prone.version>
+    <error-prone.version>2.52.0</error-prone.version>
     <jacoco.version>0.8.16</jacoco.version>
     <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
     <compatibility.jar>${project.build.directory}/${project.build.finalName}.jar</compatibility.jar>
