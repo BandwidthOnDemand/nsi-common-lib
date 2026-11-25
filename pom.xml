@@ -39,7 +39,7 @@
     <!-- renovate: depName=org.apache.maven.plugins:maven-deploy-plugin -->
     <maven-deploy-plugin.version>3.2.0</maven-deploy-plugin.version>
     <!-- renovate: depName=org.codehaus.mojo:versions-maven-plugin -->
-    <versions-maven-plugin.version>2.25.1</versions-maven-plugin.version>
+    <versions-maven-plugin.version>2.25.2</versions-maven-plugin.version>
     <jaxb2-maven-plugin.version>4.3.0</jaxb2-maven-plugin.version>
     <istack.version>4.2.0</istack.version>
     <error-prone.version>2.52.0</error-prone.version>
