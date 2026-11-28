@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.2</version>
+    <version>4.2.0</version>
   </parent>
 
   <properties>
@@ -42,7 +42,7 @@
     <versions-maven-plugin.version>2.25.2</versions-maven-plugin.version>
     <jaxb2-maven-plugin.version>4.3.0</jaxb2-maven-plugin.version>
     <istack.version>4.2.0</istack.version>
-    <error-prone.version>2.52.0</error-prone.version>
+    <error-prone.version>2.53.0</error-prone.version>
     <jacoco.version>0.8.16</jacoco.version>
     <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
     <compatibility.jar>${project.build.directory}/${project.build.finalName}.jar</compatibility.jar>
